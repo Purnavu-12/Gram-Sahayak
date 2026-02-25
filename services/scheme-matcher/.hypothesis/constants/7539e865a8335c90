@@ -1,0 +1,4 @@
+# file: D:\kiro-1\services\scheme-matcher\data_freshness_monitor.py
+# hypothesis_version: 6.151.9
+
+[100, 3600, 'alert_id', 'alerts', 'critical', 'critical_count', 'critical_percentage', 'empty', 'error', 'fresh', 'fresh_count', 'fresh_percentage', 'freshness_status', 'healthy', 'info', 'last_updated', 'message', 'metadata', 'name', 'recent_alerts_24h', 'registered_callbacks', 'scheme_id', 'scheme_name', 'severity', 'severity_counts', 'stale', 'stale_count', 'stale_percentage', 'status', 'timestamp', 'total_alerts', 'total_schemes', 'unknown', 'unknown_count', 'warning']

@@ -1,0 +1,4 @@
+# file: D:\kiro-1\services\user-profile\models.py
+# hypothesis_version: 6.151.9
+
+[100, 150, 200, 365, '1.0', '^\\+?[1-9]\\d{9,14}$', '^\\d{12}$', 'agricultural_laborer', 'analytics', 'as', 'bn', 'buddhist', 'cancelled', 'christian', 'completed', 'daily_wage_worker', 'data_collection', 'data_sharing', 'en', 'ews', 'farmer', 'female', 'general', 'government_employee', 'gu', 'hi', 'hindu', 'ifscCode', 'in_progress', 'jain', 'kn', 'male', 'marketing', 'ml', 'mr', 'multimodal', 'muslim', 'obc', 'or', 'other', 'pa', 'private_employee', 'regional', 'retired', 'sc', 'scheduled', 'self_employed', 'sikh', 'st', 'standard', 'student', 'ta', 'te', 'text', 'unemployed', 'ur', 'voice']

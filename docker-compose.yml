@@ -1,0 +1,93 @@
+version: '3.8'
+
+services:
+  api-gateway:
+    build:
+      context: ./services/api-gateway
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - redis
+      - voice-engine
+      - dialect-detector
+      - scheme-matcher
+    volumes:
+      - ./services/api-gateway:/app
+      - /app/node_modules
+
+  voice-engine:
+    build:
+      context: ./services/voice-engine
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./services/voice-engine:/app
+      - /app/node_modules
+
+  dialect-detector:
+    build:
+      context: ./services/dialect-detector
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8001"
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./services/dialect-detector:/app
+
+  scheme-matcher:
+    build:
+      context: ./services/scheme-matcher
+      dockerfile: Dockerfile
+    ports:
+      - "8002:8002"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - NEO4J_URI=bolt://neo4j:7687
+    depends_on:
+      - neo4j
+    volumes:
+      - ./services/scheme-matcher:/app
+
+  form-generator:
+    build:
+      context: ./services/form-generator
+      dockerfile: Dockerfile
+    ports:
+      - "3002:3002"
+    environment:
+      - NODE_ENV=development
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - redis
+    volumes:
+      - ./services/form-generator:/app
+      - /app/node_modules
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+
+  neo4j:
+    image: neo4j:5-community
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    environment:
+      - NEO4J_AUTH=neo4j/password
+    volumes:
+      - neo4j-data:/data
+
+volumes:
+  redis-data:
+  neo4j-data:

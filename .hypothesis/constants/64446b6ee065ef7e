@@ -1,0 +1,4 @@
+# file: D:\kiro-1\services\document-guide\acquisition_data.py
+# hypothesis_version: 6.151.9
+
+['15-30 days', '15-30 दिन', '15-30 நாட்கள்', '15-30 రోజులు', '30-45 days', '30-45 दिन', '30-45 நாட்கள்', '30-45 రోజులు', '60-90 days', '60-90 दिन', '60-90 நாட்கள்', '60-90 రోజులు', '7-15 days', '7-15 दिन', '7-15 நாட்கள்', '7-15 రోజులు', 'AADHAAR', 'CASTE_CERTIFICATE', 'Caste/community name', 'Category (SC/ST/OBC)', 'DISTRICT_OFFICE', 'INCOME_CERTIFICATE', 'LAND_RECORDS', 'TEHSIL_OFFICE', 'UIDAI_CENTER', 'authority', 'authority_id', 'contact_info', 'document_id', 'email', 'en', 'fees', 'format', 'help@uidai.gov.in', 'hi', 'https://uidai.gov.in', 'key_elements', 'locator', 'names', 'phone', 'processing_time', 'sample_text', 'steps', 'ta', 'te', 'template_info', 'website', 'जाति/समुदाय का नाम', 'पूर्ण आवासीय पता', 'சாதி/சமூக பெயர்', 'வகை (SC/ST/OBC)', 'కులం/సమాజం పేరు', 'వర్గం (SC/ST/OBC)']

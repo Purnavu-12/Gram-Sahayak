@@ -1,0 +1,4 @@
+# file: D:\kiro-1\services\user-profile\privacy_manager.py
+# hypothesis_version: 6.151.9
+
+[100, 365, '*.json', './data/privacy', '1.0', 'access_logs', 'deletions', 'settings']

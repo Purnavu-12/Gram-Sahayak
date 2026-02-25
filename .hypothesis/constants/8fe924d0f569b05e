@@ -1,0 +1,4 @@
+# file: D:\kiro-1\services\user-profile\encryption.py
+# hypothesis_version: 6.151.9
+
+[256, 100000, 'utf-8']

@@ -1,0 +1,31 @@
+{
+  "name": "gram-sahayak",
+  "version": "1.0.0",
+  "description": "Voice-first AI assistant for rural India's government welfare access",
+  "private": true,
+  "workspaces": [
+    "services/voice-engine",
+    "services/dialect-detector",
+    "services/scheme-matcher",
+    "services/form-generator",
+    "services/api-gateway"
+  ],
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "build": "npm run build --workspaces",
+    "dev": "docker-compose up",
+    "lint": "eslint . --ext .ts,.tsx"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.0",
+    "@types/node": "^20.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "fast-check": "^4.5.3",
+    "jest": "^29.5.0",
+    "ts-jest": "^29.1.0",
+    "typescript": "^5.0.0"
+  }
+}

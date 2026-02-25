@@ -1,0 +1,4 @@
+# file: D:\kiro-1\services\user-profile\voice_updates.py
+# hypothesis_version: 6.151.9
+
+['([a-zA-Z]+)\\s+state', ',', "You don't own land", 'You own land', '\\b(assamese)\\b', '\\b(bengali|bangla)\\b', '\\b(english)\\b', '\\b(gujarati)\\b', '\\b(hindi)\\b', '\\b(kannada)\\b', '\\b(malayalam)\\b', '\\b(male|man|boy)\\b', '\\b(marathi)\\b', '\\b(odia|oriya)\\b', '\\b(punjabi)\\b', '\\b(tamil)\\b', '\\b(telugu)\\b', '\\b(urdu)\\b', 'age', 'annualIncome', 'areaInAcres', 'caste', 'district', 'familySize', 'gender', 'landArea', 'landOwned', 'landOwnership', 'name', 'occupation', 'owned', 'phoneNumber', 'preferredLanguage', 'state', 'village']
