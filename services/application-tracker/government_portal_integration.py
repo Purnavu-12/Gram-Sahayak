@@ -426,8 +426,9 @@ class GovernmentPortalIntegration:
         """Generate confirmation number"""
         prefix = portal_type.value[:3].upper()
         import uuid
-        unique_part = uuid.uuid4().hex[:9].upper()
-        return f"{prefix}{unique_part}"[:12]
+        # Use numeric representation for the suffix to maintain digit-only format
+        unique_num = abs(hash(uuid.uuid4())) % 1000000000
+        return f"{prefix}{unique_num:09d}"[:12]
 
     async def get_application_status(
         self,

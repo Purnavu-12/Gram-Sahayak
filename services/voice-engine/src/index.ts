@@ -1,7 +1,7 @@
 import express from 'express';
 import { WebSocketServer, WebSocket } from 'ws';
 import { VoiceEngineService } from './voice-engine-service';
-import { DialectCode } from '../../../shared/types';
+import { DialectCode } from '../../../shared/types/voice-engine';
 
 const app = express();
 const port = process.env.PORT || 3001;
