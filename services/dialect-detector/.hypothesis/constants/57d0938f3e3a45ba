@@ -1,4 +1,0 @@
-# file: /home/runner/work/Gram-Sahayak/Gram-Sahayak/services/dialect-detector/main.py
-# hypothesis_version: 6.151.9
-
-[500, '/detect', '/dialects', '/feedback', '/health', 'dialects', 'healthy', 'status', 'success']

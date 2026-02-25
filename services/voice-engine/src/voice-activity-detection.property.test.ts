@@ -389,7 +389,9 @@ describe('Voice Activity Detection Property Tests', () => {
               expect(speechDetected).toBe(true);
               
               // 2. Segment should be emitted after sufficient pause if speech was detected
-              if (pauseDuration > 500 + (frameDuration * 10)) {
+              // AND speech duration meets the minimum threshold
+              const totalSpeechDuration = (energyLevels.length - 1) * frameDuration;
+              if (pauseDuration > 500 + (frameDuration * 10) && totalSpeechDuration >= 100) {
                 expect(segmentEmitted).toBe(true);
               }
             }
@@ -456,13 +458,17 @@ describe('Voice Activity Detection Property Tests', () => {
 
             // Assert - Property: Edge cases are handled correctly
             
+            // Calculate the actual speech duration as seen by VAD
+            const actualSpeechDuration = (speechFrames - 1) * frameDuration;
+            
             // 1. Even very short speech should be detected if above minimum duration
             if (speechDuration >= 50 && speechEnergy > 0.01) {
               expect(events).toContain('start');
             }
 
             // 2. Very long pause should definitely end speech if speech was detected
-            if (events.includes('start')) {
+            // AND speech was long enough to not be treated as a false start
+            if (events.includes('start') && actualSpeechDuration >= 50) {
               expect(events).toContain('end');
               expect(events).toContain('segment');
             }

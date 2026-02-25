@@ -121,6 +121,50 @@ class GovernmentPortalIntegration:
                 },
                 "rate_limit": 100,
                 "retry_attempts": 3
+            },
+            PortalType.DIGILOCKER: {
+                "base_url": "https://api.digilocker.gov.in/v1",
+                "auth_type": "oauth2",
+                "endpoints": {
+                    "submit": "/documents/submit",
+                    "status": "/documents/{application_id}/status",
+                    "update": "/documents/{application_id}/update"
+                },
+                "rate_limit": 100,
+                "retry_attempts": 3
+            },
+            PortalType.PM_KISAN: {
+                "base_url": "https://api.pmkisan.gov.in/v1",
+                "auth_type": "api_key",
+                "endpoints": {
+                    "submit": "/beneficiary/register",
+                    "status": "/beneficiary/{application_id}/status",
+                    "update": "/beneficiary/{application_id}/update"
+                },
+                "rate_limit": 50,
+                "retry_attempts": 3
+            },
+            PortalType.MGNREGA: {
+                "base_url": "https://api.mgnrega.nic.in/v1",
+                "auth_type": "api_key",
+                "endpoints": {
+                    "submit": "/jobcard/register",
+                    "status": "/jobcard/{application_id}/status",
+                    "update": "/jobcard/{application_id}/update"
+                },
+                "rate_limit": 50,
+                "retry_attempts": 3
+            },
+            PortalType.AYUSHMAN_BHARAT: {
+                "base_url": "https://api.pmjay.gov.in/v1",
+                "auth_type": "jwt",
+                "endpoints": {
+                    "submit": "/beneficiary/enroll",
+                    "status": "/beneficiary/{application_id}/status",
+                    "update": "/beneficiary/{application_id}/update"
+                },
+                "rate_limit": 100,
+                "retry_attempts": 3
             }
         }
 
@@ -352,7 +396,8 @@ class GovernmentPortalIntegration:
         # Generate submission ID and confirmation number
         submission_id = self._generate_submission_id(portal_type, application_data)
         confirmation_number = self._generate_confirmation_number(portal_type)
-        application_id = f"{portal_type.value.upper()}-{int(time.time())}"
+        import uuid
+        application_id = f"{portal_type.value.upper()}-{int(time.time())}-{uuid.uuid4().hex[:6].upper()}"
         
         # In production, make actual HTTP request:
         # response = await self.http_client.post(
@@ -380,11 +425,9 @@ class GovernmentPortalIntegration:
     def _generate_confirmation_number(self, portal_type: PortalType) -> str:
         """Generate confirmation number"""
         prefix = portal_type.value[:3].upper()
-        # Use both timestamp and random component for uniqueness
-        import random
-        timestamp = int(time.time() * 1000)  # Use milliseconds for more precision
-        random_part = random.randint(0, 999)
-        return f"{prefix}{timestamp % 1000000:06d}{random_part:03d}"[:12]
+        import uuid
+        unique_part = uuid.uuid4().hex[:9].upper()
+        return f"{prefix}{unique_part}"[:12]
 
     async def get_application_status(
         self,

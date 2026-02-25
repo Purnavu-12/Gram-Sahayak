@@ -1,4 +1,0 @@
-# file: /home/runner/work/Gram-Sahayak/Gram-Sahayak/services/application-tracker/outcome_explanation.py
-# hypothesis_version: 6.151.9
-
-['15-30 days', '1800-XXX-XXXX', '30-45 days', '4. Submit Appeal', 'Appeal Letter', 'Application Issues', 'Application rejected', 'District Office', 'Expired Documents', 'Missing Documents', 'N/A', 'Online Portal', 'Registered Post', 'Supporting Evidence', 'action', 'appeal_eligible', 'appeal_window_days', 'approved', 'correction', 'description', 'document', 'eligible', 'email', 'expired', 'expired_documents', 'explanation', 'general_tips', 'helpline', 'incomplete_documents', 'ineligible', 'invalid_information', 'issue', 'method', 'missing_criteria', 'name', 'not_eligible', 'office', 'other', 'partially_approved', 'primary', 'processing_time', 'rejected', 'required_documents', 'resubmission_allowed', 'step', 'submission_methods', 'technical_error']

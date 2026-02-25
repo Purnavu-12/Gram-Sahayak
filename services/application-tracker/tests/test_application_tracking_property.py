@@ -70,16 +70,16 @@ def application_data_strategy(draw):
 @st.composite
 def credentials_strategy(draw, portal_type: PortalType):
     """Generate valid credentials based on portal type"""
-    if portal_type == PortalType.MY_SCHEME:
+    if portal_type in (PortalType.MY_SCHEME, PortalType.DIGILOCKER):
         return {
             "client_id": draw(st.text(min_size=10, max_size=20, alphabet=st.characters(whitelist_categories=("L", "N")))),
             "client_secret": draw(st.text(min_size=20, max_size=40, alphabet=st.characters(whitelist_categories=("L", "N"))))
         }
-    elif portal_type == PortalType.E_SHRAM:
+    elif portal_type in (PortalType.E_SHRAM, PortalType.PM_KISAN, PortalType.MGNREGA):
         return {
             "api_key": draw(st.text(min_size=32, max_size=64, alphabet=st.characters(whitelist_categories=("L", "N"))))
         }
-    elif portal_type == PortalType.UMANG:
+    elif portal_type in (PortalType.UMANG, PortalType.AYUSHMAN_BHARAT):
         return {
             "user_id": draw(st.text(min_size=5, max_size=20, alphabet=st.characters(whitelist_categories=("L", "N")))),
             "secret": draw(st.text(min_size=10, max_size=30, alphabet=st.characters(whitelist_categories=("L", "N"))))
