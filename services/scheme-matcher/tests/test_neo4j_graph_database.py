@@ -29,6 +29,8 @@ def neo4j_matcher():
                 neo4j_user=neo4j_user,
                 neo4j_password=neo4j_password
             )
+            if matcher.neo4j_driver is None:
+                pytest.skip("Neo4j server not available")
             yield matcher
             matcher.close()
         except Exception as e:
