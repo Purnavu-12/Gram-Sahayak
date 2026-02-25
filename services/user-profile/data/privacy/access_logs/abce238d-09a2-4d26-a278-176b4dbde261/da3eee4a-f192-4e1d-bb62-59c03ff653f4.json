@@ -1,0 +1,12 @@
+{
+  "logId": "da3eee4a-f192-4e1d-bb62-59c03ff653f4",
+  "userId": "abce238d-09a2-4d26-a278-176b4dbde261",
+  "accessedBy": "deletion_system",
+  "accessType": "delete",
+  "timestamp": "2026-02-25T14:07:09.805319",
+  "dataFields": [
+    "all"
+  ],
+  "purpose": "Data deletion scheduled",
+  "ipAddress": null
+}

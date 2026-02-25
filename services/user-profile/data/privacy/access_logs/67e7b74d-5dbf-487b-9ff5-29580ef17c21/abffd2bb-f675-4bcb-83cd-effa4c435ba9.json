@@ -1,0 +1,12 @@
+{
+  "logId": "abffd2bb-f675-4bcb-83cd-effa4c435ba9",
+  "userId": "67e7b74d-5dbf-487b-9ff5-29580ef17c21",
+  "accessedBy": "privacy_management_system",
+  "accessType": "update",
+  "timestamp": "2026-02-25T14:07:09.846971",
+  "dataFields": [
+    "privacy_settings"
+  ],
+  "purpose": "Privacy settings updated",
+  "ipAddress": null
+}

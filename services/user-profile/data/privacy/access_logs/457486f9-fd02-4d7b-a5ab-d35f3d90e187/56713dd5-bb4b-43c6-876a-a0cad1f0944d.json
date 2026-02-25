@@ -1,0 +1,12 @@
+{
+  "logId": "56713dd5-bb4b-43c6-876a-a0cad1f0944d",
+  "userId": "457486f9-fd02-4d7b-a5ab-d35f3d90e187",
+  "accessedBy": "api",
+  "accessType": "read",
+  "timestamp": "2026-02-25T14:07:09.858554",
+  "dataFields": [
+    "profile"
+  ],
+  "purpose": "Profile retrieval",
+  "ipAddress": null
+}

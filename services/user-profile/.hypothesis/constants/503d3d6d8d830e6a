@@ -1,0 +1,4 @@
+# file: /home/runner/work/Gram-Sahayak/Gram-Sahayak/services/user-profile/main.py
+# hypothesis_version: 6.151.9
+
+[100, 404, 500, 8009, '*', './data/family', './data/privacy', './data/profiles', '/health', '/profiles', '/profiles/{user_id}', '0.0.0.0', '1.0', '1.0.0', 'ENCRYPTION_KEY', 'FAMILY_PATH', 'PRIVACY_PATH', 'Profile not found', 'Profile retrieval', 'STORAGE_PATH', 'User Profile Service', 'User not found', '__main__', 'access_logs', 'all', 'api', 'consent', 'create', 'delete', 'deletedCount', 'deletionId', 'deletion_system', 'family_member', 'family_members', 'healthy', 'message', 'privacy_settings', 'profile', 'read', 'scheduled', 'scheduledDate', 'service', 'status', 'success', 'update', 'user', 'user-profile', 'voice_update_system']

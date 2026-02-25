@@ -1,0 +1,9 @@
+{
+  "deletionId": "9913086e-3657-4810-a88e-91767f53128d",
+  "userId": "c2a47e2d-44b0-44bd-81ee-ab02486b42d2",
+  "requestedAt": "2026-02-25T14:07:09.791607",
+  "scheduledDeletionDate": "2026-03-27T14:07:09.791607",
+  "status": "scheduled",
+  "reason": "User requested account closure",
+  "completedAt": null
+}

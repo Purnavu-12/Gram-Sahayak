@@ -1,0 +1,12 @@
+{
+  "logId": "ca432d02-d886-47fd-be82-3bab97a4872b",
+  "userId": "b92f9505-e548-41b4-960a-443b94f094eb",
+  "accessedBy": "privacy_management_system",
+  "accessType": "update",
+  "timestamp": "2026-02-25T14:07:09.853091",
+  "dataFields": [
+    "consent"
+  ],
+  "purpose": "Consent updated: data_collection",
+  "ipAddress": null
+}

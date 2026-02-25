@@ -1,0 +1,15 @@
+{
+  "userId": "b92f9505-e548-41b4-960a-443b94f094eb",
+  "consents": [
+    {
+      "consentType": "data_collection",
+      "granted": true,
+      "timestamp": "2026-02-25T14:07:09.852935",
+      "version": "1.0"
+    }
+  ],
+  "dataRetentionDays": 365,
+  "allowFamilyAccess": true,
+  "allowDataExport": true,
+  "updatedAt": "2026-02-25T14:07:09.852949"
+}

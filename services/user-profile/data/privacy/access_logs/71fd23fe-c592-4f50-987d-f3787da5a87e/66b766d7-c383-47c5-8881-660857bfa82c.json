@@ -1,0 +1,12 @@
+{
+  "logId": "66b766d7-c383-47c5-8881-660857bfa82c",
+  "userId": "71fd23fe-c592-4f50-987d-f3787da5a87e",
+  "accessedBy": "family_management_system",
+  "accessType": "read",
+  "timestamp": "2026-02-25T14:07:09.824322",
+  "dataFields": [
+    "family_members"
+  ],
+  "purpose": "Family members retrieved",
+  "ipAddress": null
+}

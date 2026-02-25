@@ -1,0 +1,13 @@
+{
+  "logId": "d6e1baed-7707-4026-b555-6af944547f7f",
+  "userId": "433d5c75-5126-4286-abd2-690b40ba0b56",
+  "accessedBy": "voice_update_system",
+  "accessType": "update",
+  "timestamp": "2026-02-25T14:07:09.783660",
+  "dataFields": [
+    "name",
+    "age"
+  ],
+  "purpose": "Confirmed voice-based profile update",
+  "ipAddress": null
+}

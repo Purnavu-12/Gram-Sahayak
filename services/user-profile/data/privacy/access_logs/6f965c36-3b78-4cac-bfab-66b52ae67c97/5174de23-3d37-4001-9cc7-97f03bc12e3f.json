@@ -1,0 +1,12 @@
+{
+  "logId": "5174de23-3d37-4001-9cc7-97f03bc12e3f",
+  "userId": "6f965c36-3b78-4cac-bfab-66b52ae67c97",
+  "accessedBy": "family_management_system",
+  "accessType": "create",
+  "timestamp": "2026-02-25T14:07:09.813822",
+  "dataFields": [
+    "family_member"
+  ],
+  "purpose": "Family member profile created",
+  "ipAddress": null
+}
