@@ -1,4 +1,5 @@
-import { VoiceEngine, SessionId, TranscriptionResult, VoiceProfile, SessionSummary, DialectCode } from '../../../shared/types';
+import { VoiceEngine, SessionId, TranscriptionResult, VoiceProfile, SessionSummary } from '../../../shared/types';
+import { DialectCode } from '../../../shared/types/voice-engine';
 import { WebRTCStreamingService, AudioChunkData } from './webrtc-streaming';
 import { VoiceActivityDetector, VADState, SpeechSegment } from './voice-activity-detection';
 import { AudioPreprocessor, AudioBufferManager } from './audio-preprocessing';

@@ -37,3 +37,8 @@ htmlcov/
 
 # Redis
 dump.rdb
+
+# Test artifacts
+.hypothesis/
+services/user-profile/data/
+services/*/data/

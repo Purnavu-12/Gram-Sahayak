@@ -554,9 +554,8 @@ class DialectDetectorService:
             "model_version": self.continuous_learning.model_pipeline.get_active_version()  # Task 3.4
         }
         
-        # Add context information if available
-        if context_info:
-            result["context"] = context_info
+        # Add context information (always include for consistent result structure)
+        result["context"] = context_info if context_info else {}
 
         return result
 

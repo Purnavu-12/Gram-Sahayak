@@ -1,6 +1,7 @@
 import express from 'express';
 import { WebSocketServer, WebSocket } from 'ws';
 import { VoiceEngineService } from './voice-engine-service';
+import { DialectCode } from '../../../shared/types/voice-engine';
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -99,7 +100,7 @@ app.get('/offline/available/:language', (req, res) => {
     const { dialect } = req.query;
     const isAvailable = voiceEngine.isOfflineModeAvailable(
       language,
-      dialect as string | undefined
+      dialect as DialectCode | undefined
     );
     res.json({ isAvailable, language, dialect });
   } catch (error) {
@@ -188,7 +189,7 @@ wss.on('connection', (ws: WebSocket, req) => {
       }
 
       // Process audio data
-      const result = await voiceEngine.processAudioStream(sessionId, data.buffer);
+      const result = await voiceEngine.processAudioStream(sessionId, data.buffer as ArrayBuffer);
       
       // Send transcription result if final
       if (result.isFinal && result.text) {

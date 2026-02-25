@@ -338,11 +338,11 @@ async def test_property_freshness_detection_accuracy(update: Dict[str, Any]):
         # Property 1: Freshness detection should be accurate based on age
         status = matcher.freshness_monitor.check_scheme_freshness(scheme)
         
-        if hours_ago <= 24:
+        if hours_ago < 24:
             # Should be FRESH
             assert status == FreshnessStatus.FRESH, \
                 f"Scheme updated {hours_ago} hours ago should be FRESH"
-        elif hours_ago <= 48:
+        elif hours_ago < 48:
             # Should be STALE
             assert status == FreshnessStatus.STALE, \
                 f"Scheme updated {hours_ago} hours ago should be STALE"

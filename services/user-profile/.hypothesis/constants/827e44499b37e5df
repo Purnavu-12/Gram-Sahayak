@@ -1,0 +1,4 @@
+# file: /home/runner/work/Gram-Sahayak/Gram-Sahayak/services/user-profile/storage.py
+# hypothesis_version: 6.151.9
+
+['*.enc', './data/profiles']

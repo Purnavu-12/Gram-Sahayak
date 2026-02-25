@@ -11,7 +11,8 @@
  */
 
 import { EventEmitter } from 'events';
-import { TranscriptionResult, DialectCode } from '../../../shared/types';
+import { TranscriptionResult } from '../../../shared/types';
+import { DialectCode } from '../../../shared/types/voice-engine';
 
 /**
  * Model version information

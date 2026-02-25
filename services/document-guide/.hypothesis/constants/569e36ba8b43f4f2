@@ -1,0 +1,4 @@
+# file: /home/runner/work/Gram-Sahayak/Gram-Sahayak/services/document-guide/main.py
+# hypothesis_version: 6.151.9
+
+[500, '/authorities/all', '/authorities/contact', '/documents/all', '/documents/languages', '/documents/scheme', '/documents/template', '/health', 'authorities', 'document-guide', 'documents', 'en', 'healthy', 'language', 'languages', 'service', 'status']

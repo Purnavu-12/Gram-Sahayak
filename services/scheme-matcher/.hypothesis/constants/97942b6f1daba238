@@ -1,4 +1,0 @@
-# file: D:\kiro-1\services\scheme-matcher\external_api_integration.py
-# hypothesis_version: 6.151.9
-
-[200, 'Authorization', 'Content-Type', 'age_max', 'age_min', 'application/json', 'benefit_amount', 'caste', 'category', 'complex', 'complexity', 'data', 'description', 'difficulty', 'e-Shram', 'easy', 'eligibility', 'employment', 'gender', 'general', 'hard', 'id', 'income_max', 'last_updated', 'max_age', 'max_income', 'medium', 'min_age', 'moderate', 'myScheme', 'name', 'occupation', 'occupations', 'related_schemes', 'scheme_id', 'scheme_name', 'schemes', 'simple', 'source', 'state', 'states', 'updated_at', 'updated_since']

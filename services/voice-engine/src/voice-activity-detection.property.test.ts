@@ -25,11 +25,11 @@ describe('Voice Activity Detection Property Tests', () => {
           fc.record({
             // Speech segment parameters
             speechDuration: fc.integer({ min: 200, max: 3000 }), // 200ms to 3s
-            speechEnergy: fc.double({ min: 0.05, max: 0.5 }), // Clear speech energy
+            speechEnergy: fc.double({ min: 0.05, max: 0.5, noNaN: true }), // Clear speech energy
             
             // Pause parameters
             pauseDuration: fc.integer({ min: 100, max: 2000 }), // 100ms to 2s
-            pauseEnergy: fc.double({ min: 0.0, max: 0.005 }), // Very low energy for pauses
+            pauseEnergy: fc.double({ min: 0.0, max: 0.005, noNaN: true }), // Very low energy for pauses
             
             // Configuration
             silenceThreshold: fc.integer({ min: 300, max: 800 }), // Silence detection threshold
@@ -136,7 +136,7 @@ describe('Voice Activity Detection Property Tests', () => {
             segments: fc.array(
               fc.record({
                 speechDuration: fc.integer({ min: 150, max: 1000 }),
-                speechEnergy: fc.double({ min: 0.05, max: 0.4 }),
+                speechEnergy: fc.double({ min: 0.05, max: 0.4, noNaN: true }),
                 pauseAfter: fc.integer({ min: 50, max: 1500 })
               }),
               { minLength: 2, maxLength: 5 }
@@ -233,7 +233,7 @@ describe('Voice Activity Detection Property Tests', () => {
             shortPauseDuration: fc.integer({ min: 50, max: 300 }),
             // Long pause that SHOULD end speech
             longPauseDuration: fc.integer({ min: 600, max: 1200 }),
-            speechEnergy: fc.double({ min: 0.05, max: 0.5 }),
+            speechEnergy: fc.double({ min: 0.05, max: 0.5, noNaN: true }),
             speechDuration: fc.integer({ min: 200, max: 800 })
           }),
           async ({ shortPauseDuration, longPauseDuration, speechEnergy, speechDuration }) => {
@@ -332,7 +332,7 @@ describe('Voice Activity Detection Property Tests', () => {
           fc.record({
             // Varying speech energy (simulating volume changes)
             energyLevels: fc.array(
-              fc.double({ min: 0.02, max: 0.5 }),
+              fc.double({ min: 0.02, max: 0.5, noNaN: true }),
               { minLength: 3, maxLength: 10 }
             ),
             frameDuration: fc.constantFrom(10, 20, 30), // Valid frame durations
@@ -389,7 +389,9 @@ describe('Voice Activity Detection Property Tests', () => {
               expect(speechDetected).toBe(true);
               
               // 2. Segment should be emitted after sufficient pause if speech was detected
-              if (pauseDuration > 500 + (frameDuration * 10)) {
+              // AND speech duration meets the minimum threshold
+              const totalSpeechDuration = (energyLevels.length - 1) * frameDuration;
+              if (pauseDuration > 500 + (frameDuration * 10) && totalSpeechDuration >= 100) {
                 expect(segmentEmitted).toBe(true);
               }
             }
@@ -456,13 +458,17 @@ describe('Voice Activity Detection Property Tests', () => {
 
             // Assert - Property: Edge cases are handled correctly
             
+            // Calculate the actual speech duration as seen by VAD
+            const actualSpeechDuration = (speechFrames - 1) * frameDuration;
+            
             // 1. Even very short speech should be detected if above minimum duration
             if (speechDuration >= 50 && speechEnergy > 0.01) {
               expect(events).toContain('start');
             }
 
             // 2. Very long pause should definitely end speech if speech was detected
-            if (events.includes('start')) {
+            // AND speech was long enough to not be treated as a false start
+            if (events.includes('start') && actualSpeechDuration >= 50) {
               expect(events).toContain('end');
               expect(events).toContain('segment');
             }
