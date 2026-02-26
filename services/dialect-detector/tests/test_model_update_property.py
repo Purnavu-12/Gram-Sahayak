@@ -152,7 +152,7 @@ class TestModelUpdateContinuityProperties:
             f"Confidence out of range after update: {updated_result['confidence']}"
         )
         
-        # Property: Detection time must not significantly degrade (allow 200% tolerance)
+        # Property: Detection time must not significantly degrade (allow 3x tolerance for simulated timing)
         assert updated_result["detection_time"] < baseline_time * 3, (
             f"Detection time degraded significantly: "
             f"baseline={baseline_time}ms, updated={updated_result['detection_time']}ms"
