@@ -35,7 +35,7 @@ class UserPreferences(BaseModel):
 @app.post("/schemes/find", response_model=List[SchemeMatch])
 async def find_eligible_schemes(profile: UserProfile):
     try:
-        schemes = await matcher.find_eligible_schemes(profile.dict())
+        schemes = await matcher.find_eligible_schemes(profile.model_dump())
         return schemes
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -44,7 +44,7 @@ async def find_eligible_schemes(profile: UserProfile):
 @app.post("/schemes/{scheme_id}/eligibility")
 async def evaluate_eligibility(scheme_id: str, profile: UserProfile):
     try:
-        result = await matcher.evaluate_eligibility(scheme_id, profile.dict())
+        result = await matcher.evaluate_eligibility(scheme_id, profile.model_dump())
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -54,8 +54,8 @@ async def evaluate_eligibility(scheme_id: str, profile: UserProfile):
 async def get_priority_ranking(schemes: List[SchemeMatch], preferences: UserPreferences):
     try:
         ranked = await matcher.get_priority_ranking(
-            [s.dict() for s in schemes],
-            preferences.dict()
+            [s.model_dump() for s in schemes],
+            preferences.model_dump()
         )
         return ranked
     except Exception as e:
@@ -70,7 +70,7 @@ async def suggest_alternative_schemes(scheme_id: str, profile: UserProfile):
     """
     try:
         alternatives = await matcher.suggest_alternative_schemes(
-            profile.dict(),
+            profile.model_dump(),
             scheme_id
         )
         return alternatives
