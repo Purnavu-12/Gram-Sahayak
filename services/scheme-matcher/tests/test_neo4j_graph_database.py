@@ -16,7 +16,7 @@ from scheme_matcher_service import SchemeMatcherService, NEO4J_AVAILABLE
 
 
 @pytest.fixture
-def neo4j_matcher():
+async def neo4j_matcher():
     """Create matcher with Neo4j if available"""
     if NEO4J_AVAILABLE:
         neo4j_uri = os.getenv("NEO4J_URI", "bolt://localhost:7687")
@@ -32,7 +32,7 @@ def neo4j_matcher():
             if matcher.neo4j_driver is None:
                 pytest.skip("Neo4j server not available")
             yield matcher
-            matcher.close()
+            await matcher.close()
         except Exception as e:
             pytest.skip(f"Neo4j not available: {e}")
     else:
@@ -40,11 +40,11 @@ def neo4j_matcher():
 
 
 @pytest.fixture
-def in_memory_matcher():
+async def in_memory_matcher():
     """Create matcher without Neo4j for comparison"""
     matcher = SchemeMatcherService()
     yield matcher
-    matcher.close()
+    await matcher.close()
 
 
 @pytest.fixture
@@ -75,14 +75,14 @@ def test_neo4j_availability():
     assert NEO4J_AVAILABLE, "Neo4j driver should be installed (neo4j package)"
 
 
-def test_neo4j_initialization(neo4j_matcher):
+async def test_neo4j_initialization(neo4j_matcher):
     """Test that Neo4j database initializes successfully"""
     assert neo4j_matcher.neo4j_driver is not None
     assert neo4j_matcher.schemes_db is not None
     assert len(neo4j_matcher.schemes_db) > 0
 
 
-def test_graph_database_scheme_nodes(neo4j_matcher):
+async def test_graph_database_scheme_nodes(neo4j_matcher):
     """Test that scheme nodes are created in Neo4j graph"""
     if not neo4j_matcher.neo4j_driver:
         pytest.skip("Neo4j not connected")
@@ -96,7 +96,7 @@ def test_graph_database_scheme_nodes(neo4j_matcher):
         assert record["count"] >= 7  # At least 7 pre-configured schemes
 
 
-def test_graph_database_relationships(neo4j_matcher):
+async def test_graph_database_relationships(neo4j_matcher):
     """Test that scheme relationships are created in Neo4j graph"""
     if not neo4j_matcher.neo4j_driver:
         pytest.skip("Neo4j not connected")
@@ -112,7 +112,7 @@ def test_graph_database_relationships(neo4j_matcher):
         assert record["count"] > 0  # Should have relationships
 
 
-def test_graph_database_specific_relationships(neo4j_matcher):
+async def test_graph_database_specific_relationships(neo4j_matcher):
     """Test specific scheme relationships in graph"""
     if not neo4j_matcher.neo4j_driver:
         pytest.skip("Neo4j not connected")
@@ -165,7 +165,7 @@ async def test_graph_vs_memory_consistency(neo4j_matcher, in_memory_matcher, far
     assert neo4j_ids == memory_ids
 
 
-def test_graph_database_scheme_properties(neo4j_matcher):
+async def test_graph_database_scheme_properties(neo4j_matcher):
     """Test that scheme properties are correctly stored in graph"""
     if not neo4j_matcher.neo4j_driver:
         pytest.skip("Neo4j not connected")
@@ -219,7 +219,7 @@ async def test_graph_database_update_sync(neo4j_matcher):
         assert record["benefit"] == 7500
 
 
-def test_graph_database_complex_relationships(neo4j_matcher):
+async def test_graph_database_complex_relationships(neo4j_matcher):
     """Test complex relationship queries in graph database"""
     if not neo4j_matcher.neo4j_driver:
         pytest.skip("Neo4j not connected")
@@ -237,7 +237,7 @@ def test_graph_database_complex_relationships(neo4j_matcher):
         assert len(relationships) > 0
 
 
-def test_fallback_to_memory_when_neo4j_unavailable():
+async def test_fallback_to_memory_when_neo4j_unavailable():
     """Test that system falls back to in-memory database when Neo4j is unavailable"""
     # Create matcher with invalid Neo4j URI
     matcher = SchemeMatcherService(
@@ -251,7 +251,7 @@ def test_fallback_to_memory_when_neo4j_unavailable():
     assert len(matcher.schemes_db) > 0
     assert matcher.neo4j_driver is None  # Neo4j should not be connected
     
-    matcher.close()
+    await matcher.close()
 
 
 @pytest.mark.asyncio
@@ -284,7 +284,7 @@ async def test_graph_database_700_schemes_capacity(neo4j_matcher):
         assert record["count"] >= 100  # Should have at least 100 test schemes
 
 
-def test_graph_database_connection_cleanup(neo4j_matcher):
+async def test_graph_database_connection_cleanup(neo4j_matcher):
     """Test that Neo4j connections are properly cleaned up"""
     if not neo4j_matcher.neo4j_driver:
         pytest.skip("Neo4j not connected")
@@ -293,11 +293,13 @@ def test_graph_database_connection_cleanup(neo4j_matcher):
     assert neo4j_matcher.neo4j_driver is not None
     
     # Close connection
-    neo4j_matcher.close()
+    await neo4j_matcher.close()
     
-    # Driver should be closed (no exception should be raised)
-    # Note: neo4j driver doesn't have a simple "is_closed" check,
-    # but close() should be idempotent
+    # Driver should be set to None after close (idempotent)
+    assert neo4j_matcher.neo4j_driver is None
+    
+    # Second close should not raise (idempotent)
+    await neo4j_matcher.close()
 
 
 @pytest.mark.asyncio
@@ -318,7 +320,7 @@ async def test_graph_relationship_traversal(neo4j_matcher, farmer_profile):
         assert all("match_score" in s for s in related)
 
 
-def test_graph_database_data_model_completeness(neo4j_matcher):
+async def test_graph_database_data_model_completeness(neo4j_matcher):
     """Test that all required scheme properties are in graph data model"""
     if not neo4j_matcher.neo4j_driver:
         pytest.skip("Neo4j not connected")

@@ -34,7 +34,7 @@ class FeedbackData(BaseModel):
 @app.post("/detect", response_model=DialectResult)
 async def detect_dialect(audio_features: AudioFeatures):
     try:
-        result = await detector.detect_dialect(audio_features.dict())
+        result = await detector.detect_dialect(audio_features.model_dump())
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -43,7 +43,7 @@ async def detect_dialect(audio_features: AudioFeatures):
 @app.post("/feedback")
 async def update_confidence(session_id: str, feedback: FeedbackData):
     try:
-        await detector.update_confidence(session_id, feedback.dict())
+        await detector.update_confidence(session_id, feedback.model_dump())
         return {"status": "success"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
