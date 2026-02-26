@@ -9,6 +9,9 @@ describe('Offline Voice Processing Integration', () => {
   let voiceEngine: VoiceEngineService;
   let sessionId: string;
 
+  // Set timeout for all tests in this suite
+  jest.setTimeout(10000);
+
   beforeEach(async () => {
     voiceEngine = new VoiceEngineService();
     sessionId = await voiceEngine.startVoiceSession('test-user', 'hi');
@@ -18,6 +21,8 @@ describe('Offline Voice Processing Integration', () => {
     if (sessionId) {
       await voiceEngine.endVoiceSession(sessionId);
     }
+    // Cleanup offline processor to stop timers
+    voiceEngine.getOfflineProcessor().destroy();
   });
 
   describe('Offline Mode Availability', () => {

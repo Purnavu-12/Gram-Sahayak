@@ -164,6 +164,70 @@ app.post('/offline/sync', async (req, res) => {
   }
 });
 
+// Network optimization endpoints
+app.get('/network/condition', (req, res) => {
+  try {
+    const networkOptimizer = voiceEngine.getNetworkOptimizer();
+    const condition = networkOptimizer.getNetworkCondition();
+    const metrics = networkOptimizer.getNetworkMetrics();
+    const quality = networkOptimizer.getAudioQuality();
+    
+    res.json({ condition, metrics, quality });
+  } catch (error) {
+    res.status(500).json({ error: (error as Error).message });
+  }
+});
+
+app.get('/network/metrics', async (req, res) => {
+  try {
+    const networkOptimizer = voiceEngine.getNetworkOptimizer();
+    const metrics = await networkOptimizer.measureNetworkConditions();
+    res.json(metrics);
+  } catch (error) {
+    res.status(500).json({ error: (error as Error).message });
+  }
+});
+
+app.get('/network/queue-status', (req, res) => {
+  try {
+    const networkOptimizer = voiceEngine.getNetworkOptimizer();
+    const status = networkOptimizer.getSyncQueueStatus();
+    res.json(status);
+  } catch (error) {
+    res.status(500).json({ error: (error as Error).message });
+  }
+});
+
+app.post('/network/trigger-sync', async (req, res) => {
+  try {
+    const networkOptimizer = voiceEngine.getNetworkOptimizer();
+    await networkOptimizer.triggerSync();
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: (error as Error).message });
+  }
+});
+
+app.post('/network/compress-audio', async (req, res) => {
+  try {
+    const { audioData } = req.body;
+    const networkOptimizer = voiceEngine.getNetworkOptimizer();
+    
+    // Convert base64 to ArrayBuffer
+    const buffer = Buffer.from(audioData, 'base64');
+    const result = await networkOptimizer.compressAudio(buffer.buffer);
+    
+    res.json({
+      originalSize: result.originalSize,
+      compressedSize: result.compressedSize,
+      compressionRatio: result.compressionRatio,
+      compressionTime: result.compressionTime
+    });
+  } catch (error) {
+    res.status(500).json({ error: (error as Error).message });
+  }
+});
+
 const server = app.listen(port, () => {
   console.log(`Voice Engine service listening on port ${port}`);
 });

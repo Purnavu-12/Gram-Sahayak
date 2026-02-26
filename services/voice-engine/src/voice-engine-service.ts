@@ -4,6 +4,7 @@ import { WebRTCStreamingService, AudioChunkData } from './webrtc-streaming';
 import { VoiceActivityDetector, VADState, SpeechSegment } from './voice-activity-detection';
 import { AudioPreprocessor, AudioBufferManager } from './audio-preprocessing';
 import { OfflineVoiceProcessor } from './offline-processing';
+import { NetworkOptimizationService, NetworkCondition, SyncOperationType, SyncPriority } from './network-optimization';
 
 interface VoiceSession {
   userId: string;
@@ -20,14 +21,17 @@ export class VoiceEngineService implements VoiceEngine {
   private webrtcService: WebRTCStreamingService;
   private bufferManager: AudioBufferManager;
   private offlineProcessor: OfflineVoiceProcessor;
+  private networkOptimizer: NetworkOptimizationService;
   private isOnline: boolean = true;
 
   constructor() {
     this.webrtcService = new WebRTCStreamingService();
     this.bufferManager = new AudioBufferManager();
     this.offlineProcessor = new OfflineVoiceProcessor();
+    this.networkOptimizer = new NetworkOptimizationService();
     this.setupWebRTCListeners();
     this.setupOfflineListeners();
+    this.setupNetworkListeners();
   }
 
   /**
@@ -66,6 +70,35 @@ export class VoiceEngineService implements VoiceEngine {
 
     this.offlineProcessor.on('sync:completed', ({ syncTime }) => {
       console.log(`Offline data synced at ${syncTime}`);
+    });
+  }
+
+  /**
+   * Setup network optimization event listeners
+   */
+  private setupNetworkListeners(): void {
+    this.networkOptimizer.on('network:online', () => {
+      console.log('Network optimizer: connectivity restored');
+      this.isOnline = true;
+      this.offlineProcessor.setOnlineStatus(true);
+    });
+
+    this.networkOptimizer.on('network:offline', () => {
+      console.log('Network optimizer: connectivity lost');
+      this.isOnline = false;
+      this.offlineProcessor.setOnlineStatus(false);
+    });
+
+    this.networkOptimizer.on('condition:changed', ({ oldCondition, newCondition }) => {
+      console.log(`Network condition changed: ${oldCondition} -> ${newCondition}`);
+    });
+
+    this.networkOptimizer.on('quality:adjusted', ({ newQuality, condition }) => {
+      console.log(`Audio quality adjusted for ${condition}:`, newQuality);
+    });
+
+    this.networkOptimizer.on('audio:compressed', ({ originalSize, compressedSize, compressionRatio }) => {
+      console.log(`Audio compressed: ${originalSize} -> ${compressedSize} bytes (${compressionRatio.toFixed(2)}x)`);
     });
   }
 
@@ -172,7 +205,11 @@ export class VoiceEngineService implements VoiceEngine {
     }
 
     // Apply audio preprocessing
-    const processedAudio = await session.preprocessor.processAudio(audioChunk);
+    let processedAudio = await session.preprocessor.processAudio(audioChunk);
+
+    // Apply compression if needed based on network conditions
+    const compressionResult = await this.networkOptimizer.compressAudio(processedAudio);
+    processedAudio = compressionResult.compressedData;
 
     // Add to buffer
     this.bufferManager.addChunk(sessionId, processedAudio);
@@ -184,10 +221,20 @@ export class VoiceEngineService implements VoiceEngine {
     if (!this.isOnline) {
       const language = session.preferredLanguage || 'hi';
       try {
-        return await this.offlineProcessor.processOfflineSpeech(
+        const result = await this.offlineProcessor.processOfflineSpeech(
           processedAudio,
           language
         );
+        
+        // Queue for sync when online
+        this.networkOptimizer.queueOperation({
+          type: SyncOperationType.TRANSCRIPTION,
+          priority: SyncPriority.HIGH,
+          data: result,
+          maxRetries: 3
+        });
+        
+        return result;
       } catch (error) {
         console.error('Offline processing failed:', error);
         // Return error result
@@ -318,6 +365,13 @@ export class VoiceEngineService implements VoiceEngine {
    */
   getOfflineProcessor(): OfflineVoiceProcessor {
     return this.offlineProcessor;
+  }
+
+  /**
+   * Get network optimizer for advanced operations
+   */
+  getNetworkOptimizer(): NetworkOptimizationService {
+    return this.networkOptimizer;
   }
 
   /**

@@ -639,6 +639,164 @@ async def get_access_logs(user_id: str, limit: int = 100, request: Request = Non
     return logs
 
 
+@app.get("/profiles/{user_id}/export")
+async def export_user_data(user_id: str, include_access_logs: bool = True, request: Request = None):
+    """
+    Export all user data for transparency and portability.
+    
+    Args:
+        user_id: User identifier
+        include_access_logs: Whether to include access logs in export
+        
+    Returns:
+        Complete user data export
+    """
+    # Verify user exists
+    profile = storage.get_profile(user_id)
+    if not profile:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Check if user allows data export
+    settings = privacy_manager.get_privacy_settings(user_id)
+    if not settings.allowDataExport:
+        raise HTTPException(status_code=403, detail="Data export is disabled for this user")
+    
+    # Get family members
+    family_members = family_manager.get_family_members(user_id)
+    
+    # Export data
+    export_data = privacy_manager.export_user_data(
+        user_id=user_id,
+        profile=profile,
+        family_members=family_members,
+        include_access_logs=include_access_logs
+    )
+    
+    # Log this access
+    ip_address = request.client.host if request else None
+    privacy_manager.log_data_access(
+        user_id=user_id,
+        accessed_by="user",
+        access_type="read",
+        data_fields=["all"],
+        purpose="User exported data",
+        ip_address=ip_address
+    )
+    
+    return export_data
+
+
+@app.post("/profiles/{user_id}/retention/enforce")
+async def enforce_retention_policy(user_id: str):
+    """
+    Enforce data retention policy for a specific user.
+    Cleans up old data based on user's retention settings.
+    
+    Args:
+        user_id: User identifier
+        
+    Returns:
+        Cleanup statistics
+    """
+    # Verify user exists
+    profile = storage.get_profile(user_id)
+    if not profile:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    cleanup_stats = privacy_manager.enforce_retention_policy(user_id)
+    
+    # Log this action
+    privacy_manager.log_data_access(
+        user_id=user_id,
+        accessed_by="retention_system",
+        access_type="delete",
+        data_fields=["old_data"],
+        purpose="Retention policy enforcement"
+    )
+    
+    return {
+        "success": True,
+        "userId": user_id,
+        "cleanupStats": cleanup_stats
+    }
+
+
+@app.post("/admin/retention/enforce-all")
+async def enforce_retention_policy_all():
+    """
+    Enforce data retention policy for all users.
+    This endpoint should be called by a scheduled job.
+    
+    Returns:
+        Overall cleanup statistics
+    """
+    try:
+        user_ids = privacy_manager.get_all_users_for_retention_cleanup()
+        
+        total_stats = {
+            "usersProcessed": 0,
+            "totalAccessLogsDeleted": 0,
+            "totalDeletionRecordsRemoved": 0
+        }
+        
+        for user_id in user_ids:
+            # Check if user still exists
+            if storage.get_profile(user_id):
+                cleanup_stats = privacy_manager.enforce_retention_policy(user_id)
+                total_stats["usersProcessed"] += 1
+                total_stats["totalAccessLogsDeleted"] += cleanup_stats["accessLogsDeleted"]
+                total_stats["totalDeletionRecordsRemoved"] += cleanup_stats["oldDeletionRecordsRemoved"]
+        
+        return {
+            "success": True,
+            "stats": total_stats
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/profiles/{user_id}/privacy/dashboard")
+async def get_privacy_dashboard(user_id: str):
+    """
+    Get comprehensive privacy control dashboard data for a user.
+    
+    Args:
+        user_id: User identifier
+        
+    Returns:
+        Privacy dashboard with settings, deletion status, and recent access logs
+    """
+    # Verify user exists
+    profile = storage.get_profile(user_id)
+    if not profile:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Get privacy settings
+    settings = privacy_manager.get_privacy_settings(user_id)
+    
+    # Get deletion status
+    deletion_status = privacy_manager.get_deletion_status(user_id)
+    
+    # Get recent access logs
+    recent_logs = privacy_manager.get_access_logs(user_id, limit=10)
+    
+    # Get family members count
+    family_members = family_manager.get_family_members(user_id)
+    
+    dashboard = {
+        "userId": user_id,
+        "privacySettings": settings,
+        "deletionStatus": deletion_status,
+        "recentAccessLogs": recent_logs,
+        "familyMembersCount": len(family_members),
+        "dataExportAvailable": settings.allowDataExport,
+        "accountCreatedAt": profile.createdAt,
+        "lastUpdatedAt": profile.updatedAt
+    }
+    
+    return dashboard
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8009)

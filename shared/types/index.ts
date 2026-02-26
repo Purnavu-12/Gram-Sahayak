@@ -14,3 +14,5 @@ export * from './form-generator';
 
 // User profile is the canonical source for shared types
 export * from './user-profile';
+
+export * from './accessibility';

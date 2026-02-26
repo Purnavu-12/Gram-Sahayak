@@ -71,6 +71,53 @@ services:
       - ./services/form-generator:/app
       - /app/node_modules
 
+  document-guide:
+    build:
+      context: ./services/document-guide
+      dockerfile: Dockerfile
+    ports:
+      - "8003:8003"
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./services/document-guide:/app
+
+  application-tracker:
+    build:
+      context: ./services/application-tracker
+      dockerfile: Dockerfile
+    ports:
+      - "8004:8004"
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./services/application-tracker:/app
+
+  user-profile:
+    build:
+      context: ./services/user-profile
+      dockerfile: Dockerfile
+    ports:
+      - "8005:8005"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY:-dev-encryption-key-32-chars-long}
+    volumes:
+      - ./services/user-profile:/app
+      - user-profile-data:/app/data
+
+  accessibility:
+    build:
+      context: ./services/accessibility
+      dockerfile: Dockerfile
+    ports:
+      - "3003:3003"
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./services/accessibility:/app
+      - /app/node_modules
+
   redis:
     image: redis:7-alpine
     ports:
@@ -91,3 +138,4 @@ services:
 volumes:
   redis-data:
   neo4j-data:
+  user-profile-data:

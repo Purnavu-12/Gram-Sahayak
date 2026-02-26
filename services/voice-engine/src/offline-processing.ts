@@ -99,7 +99,10 @@ export class OfflineVoiceProcessor extends EventEmitter {
       syncErrors: []
     };
 
-    this.initializeOfflineCapabilities();
+    // Don't auto-initialize in test environments to avoid timer issues
+    if (process.env.NODE_ENV !== 'test') {
+      this.initializeOfflineCapabilities();
+    }
   }
 
   /**

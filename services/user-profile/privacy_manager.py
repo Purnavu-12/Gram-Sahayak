@@ -15,7 +15,9 @@ from models import (
     DataAccessLog,
     PrivacySettings,
     ConsentRecord,
-    PrivacyConsent
+    PrivacyConsent,
+    UserProfile,
+    FamilyMemberProfile
 )
 
 
@@ -341,3 +343,100 @@ class PrivacyManager:
         except Exception as e:
             print(f"Error loading privacy settings {user_id}: {e}")
             return None
+    
+    def export_user_data(
+        self,
+        user_id: str,
+        profile: Optional[UserProfile] = None,
+        family_members: Optional[List[FamilyMemberProfile]] = None,
+        include_access_logs: bool = True
+    ) -> Dict:
+        """
+        Export all user data for transparency and portability.
+        
+        Args:
+            user_id: User identifier
+            profile: User profile (if available)
+            family_members: Family member profiles (if available)
+            include_access_logs: Whether to include access logs
+            
+        Returns:
+            Dictionary containing all user data
+        """
+        export_data = {
+            "exportDate": datetime.utcnow().isoformat(),
+            "userId": user_id,
+            "profile": profile.model_dump() if profile else None,
+            "familyMembers": [m.model_dump() for m in family_members] if family_members else [],
+            "privacySettings": None,
+            "deletionStatus": None,
+            "accessLogs": []
+        }
+        
+        # Add privacy settings
+        settings = self.get_privacy_settings(user_id)
+        export_data["privacySettings"] = settings.model_dump()
+        
+        # Add deletion status
+        deletion_record = self.get_deletion_status(user_id)
+        if deletion_record:
+            export_data["deletionStatus"] = deletion_record.model_dump()
+        
+        # Add access logs if requested
+        if include_access_logs:
+            logs = self.get_access_logs(user_id, limit=1000)
+            export_data["accessLogs"] = [log.model_dump() for log in logs]
+        
+        return export_data
+    
+    def enforce_retention_policy(self, user_id: str) -> Dict[str, int]:
+        """
+        Enforce data retention policy by cleaning up old data.
+        
+        Args:
+            user_id: User identifier
+            
+        Returns:
+            Dictionary with counts of cleaned up items
+        """
+        settings = self.get_privacy_settings(user_id)
+        retention_days = settings.dataRetentionDays
+        cutoff_date = datetime.utcnow() - timedelta(days=retention_days)
+        
+        cleanup_stats = {
+            "accessLogsDeleted": 0,
+            "oldDeletionRecordsRemoved": 0
+        }
+        
+        # Clean up old access logs
+        user_log_dir = self.access_log_path / user_id
+        if user_log_dir.exists():
+            for log_file in user_log_dir.glob("*.json"):
+                log = self._load_access_log(log_file)
+                if log and log.timestamp < cutoff_date:
+                    log_file.unlink()
+                    cleanup_stats["accessLogsDeleted"] += 1
+        
+        # Clean up old completed/cancelled deletion records
+        for deletion_file in self.deletion_path.glob("*.json"):
+            record = self._load_deletion_record(deletion_file.stem)
+            if record and record.userId == user_id:
+                if record.status in [DeletionStatus.COMPLETED, DeletionStatus.CANCELLED]:
+                    if record.completedAt and record.completedAt < cutoff_date:
+                        deletion_file.unlink()
+                        cleanup_stats["oldDeletionRecordsRemoved"] += 1
+        
+        return cleanup_stats
+    
+    def get_all_users_for_retention_cleanup(self) -> List[str]:
+        """
+        Get list of all user IDs that have privacy settings.
+        Used for batch retention policy enforcement.
+        
+        Returns:
+            List of user IDs
+        """
+        user_ids = []
+        for settings_file in self.settings_path.glob("*.json"):
+            user_ids.append(settings_file.stem)
+        return user_ids
