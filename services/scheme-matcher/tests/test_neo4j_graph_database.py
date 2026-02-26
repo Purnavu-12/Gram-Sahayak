@@ -295,9 +295,11 @@ async def test_graph_database_connection_cleanup(neo4j_matcher):
     # Close connection
     await neo4j_matcher.close()
     
-    # Driver should be closed (no exception should be raised)
-    # Note: neo4j driver doesn't have a simple "is_closed" check,
-    # but close() should be idempotent
+    # Driver should be set to None after close (idempotent)
+    assert neo4j_matcher.neo4j_driver is None
+    
+    # Second close should not raise (idempotent)
+    await neo4j_matcher.close()
 
 
 @pytest.mark.asyncio
