@@ -626,7 +626,7 @@ async def get_access_logs(user_id: str, limit: int = 100, request: Request = Non
     logs = privacy_manager.get_access_logs(user_id, limit)
     
     # Log this access
-    ip_address = request.client.host if request else None
+    ip_address = request.client.host if request and request.client else None
     privacy_manager.log_data_access(
         user_id=user_id,
         accessed_by="user",

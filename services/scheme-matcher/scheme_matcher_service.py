@@ -892,9 +892,11 @@ class SchemeMatcherService:
         return min(base_score, 1.0)
 
     async def close(self):
-        """Close database connections and cleanup"""
+        """Close database connections and cleanup. Idempotent — safe to call multiple times."""
         if self.neo4j_driver:
             self.neo4j_driver.close()
+            self.neo4j_driver = None
         
         if self.api_integration:
             await self.api_integration.close()
+            self.api_integration = None

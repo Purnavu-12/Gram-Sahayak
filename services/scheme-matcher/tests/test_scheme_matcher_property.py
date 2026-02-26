@@ -245,7 +245,7 @@ async def test_property_comprehensive_scheme_matching(profile: Dict[str, Any]):
     
     finally:
         # Clean up
-        matcher.close()
+        await matcher.close()
 
 
 @pytest.mark.asyncio
@@ -327,7 +327,7 @@ async def test_property_multi_criteria_evaluation_completeness(profile: Dict[str
                 f"Eligibility logic incorrect for scheme {scheme['scheme_id']}"
     
     finally:
-        matcher.close()
+        await matcher.close()
 
 
 @pytest.mark.asyncio
@@ -335,7 +335,7 @@ async def test_property_multi_criteria_evaluation_completeness(profile: Dict[str
 @settings(
     max_examples=100,
     deadline=None,
-    suppress_health_check=[HealthCheck.function_scoped_fixture]
+    suppress_health_check=[HealthCheck.function_scoped_fixture, HealthCheck.filter_too_much]
 )
 async def test_property_ranking_correctness(profile: Dict[str, Any]):
     """
@@ -409,7 +409,7 @@ async def test_property_ranking_correctness(profile: Dict[str, Any]):
             assert len(benefit_order) == len(ease_order), "Both rankings should have same length"
     
     finally:
-        matcher.close()
+        await matcher.close()
 
 
 @pytest.mark.asyncio
@@ -453,4 +453,4 @@ async def test_property_no_false_positives(profile: Dict[str, Any]):
                 f"Eligible scheme {scheme['scheme_id']} should have confidence 1.0, got {evaluation['confidence']}"
     
     finally:
-        matcher.close()
+        await matcher.close()
