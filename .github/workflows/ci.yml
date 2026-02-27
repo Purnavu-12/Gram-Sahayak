@@ -43,7 +43,8 @@ jobs:
       - name: Run tests
         run: |
           cd services/${{ matrix.service }}
-          python -m pytest tests/ -v --tb=short || true
+          python -m pytest tests/ -v --tb=short
+        continue-on-error: true
 
   lint:
     name: Lint
@@ -55,4 +56,5 @@ jobs:
           node-version: '20'
           cache: 'npm'
       - run: npm ci
-      - run: npm run lint || true
+      - run: npm run lint
+        continue-on-error: true

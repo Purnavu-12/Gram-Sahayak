@@ -20,8 +20,9 @@ const port = process.env.PORT || 3000;
 app.use(express.json({ limit: '10mb' })); // Increased limit for audio data
 
 // CORS configuration
+const corsOrigin = process.env.CORS_ORIGIN || (process.env.NODE_ENV === 'production' ? undefined : '*');
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || '*',
+  origin: corsOrigin,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,

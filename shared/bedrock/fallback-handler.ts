@@ -213,7 +213,8 @@ export class FallbackHandler {
     state.successCount = 0;
 
     const threshold = this.defaultOptions.circuitBreakerThreshold;
-    if (state.failureCount >= threshold / 10) { // Convert percentage to count
+    // Open circuit after exceeding the configured failure count threshold
+    if (state.failureCount >= Math.max(threshold / 10, 5)) {
       state.state = 'OPEN';
       state.nextAttemptTime = new Date(Date.now() + this.defaultOptions.circuitBreakerWindow * 1000);
     }

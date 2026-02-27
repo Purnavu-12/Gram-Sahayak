@@ -25,7 +25,7 @@ export class ResponseValidator {
     try {
       const profile = JSON.parse(response.content);
 
-      if (!profile.age && profile.age !== 0) {
+      if (profile.age === undefined || profile.age === null) {
         errors.push('Missing required field: age');
       }
       if (!profile.state && !profile.location) {

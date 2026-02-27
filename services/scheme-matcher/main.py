@@ -34,7 +34,7 @@ class SchemeMatch(BaseModel):
     estimated_benefit: float
     application_difficulty: str
     reason: str
-    source: Optional[str] = "neo4j"
+    source: Optional[str] = None
 
 
 class UserPreferences(BaseModel):

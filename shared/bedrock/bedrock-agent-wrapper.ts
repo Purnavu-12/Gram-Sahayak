@@ -229,13 +229,27 @@ export class BedrockAgentWrapper {
       };
 
       if (filters.length > 0) {
+        const operatorMap: Record<string, string> = {
+          '=': 'equals',
+          '!=': 'notEquals',
+          '>=': 'greaterThanOrEquals',
+          '<=': 'lessThanOrEquals',
+          'contains': 'stringContains',
+        };
+
         retrievalConfig.vectorSearchConfiguration.filter = {
-          andAll: filters.map(f => ({
-            [f.operator === '=' ? 'equals' : f.operator === '>=' ? 'greaterThanOrEquals' : 'lessThanOrEquals']: {
-              key: f.key,
-              value: f.value,
-            },
-          })),
+          andAll: filters.map(f => {
+            const operator = operatorMap[f.operator];
+            if (!operator) {
+              throw new Error(`Unsupported filter operator: ${f.operator}`);
+            }
+            return {
+              [operator]: {
+                key: f.key,
+                value: f.value,
+              },
+            };
+          }),
         };
       }
 

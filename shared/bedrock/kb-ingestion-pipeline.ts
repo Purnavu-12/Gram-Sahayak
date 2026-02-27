@@ -127,15 +127,15 @@ export class KBIngestionPipeline {
 
   /**
    * Generate text embeddings for scheme content
+   * Note: Returns mock embeddings when Bedrock is disabled or Titan model is not yet configured.
+   * In production with Bedrock enabled, this should be connected to the Titan Embeddings API.
    */
   async generateEmbeddings(text: string, language: 'hi' | 'en'): Promise<number[]> {
-    if (!this.wrapper.isEnabled()) {
-      // Return mock embeddings for local development
-      return Array.from({ length: 1024 }, () => Math.random() * 2 - 1);
-    }
-
-    // In production, would use Titan Embeddings model
-    // const response = await this.wrapper.invokeClaudeModel(...)
-    return Array.from({ length: 1024 }, () => Math.random() * 2 - 1);
+    // TODO: Implement actual Titan Embeddings API call when Bedrock is enabled
+    // For MVP, return deterministic mock embeddings based on text hash
+    return Array.from({ length: 1024 }, (_, i) => {
+      const charCode = text.charCodeAt(i % text.length) || 0;
+      return ((charCode * (i + 1)) % 200 - 100) / 100;
+    });
   }
 }
