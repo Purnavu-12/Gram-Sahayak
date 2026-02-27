@@ -1,4 +1,5 @@
 import express from 'express';
+import path from 'path';
 import rateLimit from 'express-rate-limit';
 import { authMiddleware } from './middleware/auth';
 import { createProxyRouter, getCircuitBreakerRegistry } from './routes/proxy';
@@ -11,6 +12,9 @@ const port = process.env.PORT || 3000;
 
 app.use(express.json({ limit: '10mb' })); // Increased limit for audio data
 app.use(tracingMiddleware('api-gateway'));
+
+// Serve the frontend website as static files
+app.use(express.static(path.join(__dirname, '../../../website')));
 
 // Initialize health monitor
 const healthMonitor = new HealthMonitor();
