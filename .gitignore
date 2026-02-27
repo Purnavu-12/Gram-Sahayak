@@ -1,5 +1,8 @@
 # Dependencies
 node_modules/
+
+# Website build output
+website/dist/
 __pycache__/
 *.pyc
 .pytest_cache/
