@@ -801,7 +801,7 @@ section {
   padding: var(--space-md) var(--space-lg);
   text-align: center;
   transition: all var(--transition-normal);
-  cursor: default;
+  cursor: pointer;
   min-width: 120px;
 }
 
@@ -814,7 +814,7 @@ section {
 
 .lang-native {
   display: block;
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-xl);
   font-weight: 700;
   color: var(--color-text);
   margin-bottom: var(--space-xs);
@@ -824,6 +824,59 @@ section {
   display: block;
   font-size: var(--font-size-sm);
   color: var(--color-text-muted);
+}
+
+/* Language-specific font stacks for native script display */
+.lang-item[data-lang="hi"] .lang-native,
+.lang-item[data-lang="mr"] .lang-native,
+.lang-item[data-lang="mai"] .lang-native,
+.lang-item[data-lang="ne"] .lang-native,
+.lang-item[data-lang="kok"] .lang-native,
+.lang-item[data-lang="doi"] .lang-native,
+.lang-item[data-lang="sa"] .lang-native,
+.lang-item[data-lang="ks"] .lang-native,
+.lang-item[data-lang="brx"] .lang-native {
+  font-family: 'Noto Sans Devanagari', sans-serif;
+}
+
+.lang-item[data-lang="bn"] .lang-native,
+.lang-item[data-lang="as"] .lang-native,
+.lang-item[data-lang="mni"] .lang-native {
+  font-family: 'Noto Sans Bengali', sans-serif;
+}
+
+.lang-item[data-lang="te"] .lang-native {
+  font-family: 'Noto Sans Telugu', sans-serif;
+}
+
+.lang-item[data-lang="ta"] .lang-native {
+  font-family: 'Noto Sans Tamil', sans-serif;
+}
+
+.lang-item[data-lang="gu"] .lang-native {
+  font-family: 'Noto Sans Gujarati', sans-serif;
+}
+
+.lang-item[data-lang="kn"] .lang-native {
+  font-family: 'Noto Sans Kannada', sans-serif;
+}
+
+.lang-item[data-lang="ml"] .lang-native {
+  font-family: 'Noto Sans Malayalam', sans-serif;
+}
+
+.lang-item[data-lang="pa"] .lang-native {
+  font-family: 'Noto Sans Gurmukhi', sans-serif;
+}
+
+.lang-item[data-lang="or"] .lang-native {
+  font-family: 'Noto Sans Oriya', sans-serif;
+}
+
+.lang-geo-note {
+  font-size: var(--font-size-sm);
+  color: var(--color-primary);
+  margin-top: var(--space-sm);
 }
 
 .lang-count {
