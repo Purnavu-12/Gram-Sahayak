@@ -31,7 +31,7 @@ const DEMO_SCHEMES: SchemeResult[] = [
 ]
 
 export default function SchemesPage() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [results, setResults] = useState<SchemeResult[] | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -45,10 +45,18 @@ export default function SchemesPage() {
     }, 800)
   }
 
+  const difficultyLabel = (d: string) => {
+    const labels: Record<string, string> = {
+      easy: t('schemes.results_easy'),
+      medium: t('schemes.results_medium'),
+      hard: t('schemes.results_hard'),
+    }
+    return labels[d] || d
+  }
+
   const difficultyBadge = (d: string) => {
     const map: Record<string, string> = { easy: 'badge-easy', medium: 'badge-medium', hard: 'badge-hard' }
-    const labelMap: Record<string, string> = { easy: t('schemes.results_easy'), medium: t('schemes.results_medium'), hard: t('schemes.results_hard') }
-    return <span className={`badge ${map[d] || ''}`}>{labelMap[d]}</span>
+    return <span className={`badge ${map[d] || ''}`}>{difficultyLabel(d)}</span>
   }
 
   return (
@@ -141,7 +149,7 @@ export default function SchemesPage() {
                   <button className="btn btn-green" style={{ padding: '0.4rem 1rem', fontSize: '0.9rem' }}>{t('schemes.results_apply')}</button>
                   <button className="btn btn-outline" style={{ padding: '0.4rem 1rem', fontSize: '0.9rem', color: 'var(--primary)', borderColor: 'var(--primary)' }}>{t('schemes.results_details')}</button>
                   <SpeakButton
-                    text={`${scheme.name}. ${scheme.reason}. ${t('schemes.results_benefit')}: ${scheme.benefit.toLocaleString()} ${t('schemes.results_difficulty')}: ${t('schemes.results_' + scheme.difficulty)}`}
+                    text={`${scheme.name}. ${scheme.reason}. ${t('schemes.results_benefit')}: ${scheme.benefit.toLocaleString(i18n.language)} ${t('schemes.results_difficulty')}: ${difficultyLabel(scheme.difficulty)}`}
                     inline
                   />
                 </div>

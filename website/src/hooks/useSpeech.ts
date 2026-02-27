@@ -35,9 +35,19 @@ export function useSpeech() {
   const { i18n } = useTranslation()
   const [speaking, setSpeaking] = useState(false)
   const [supported, setSupported] = useState(true)
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([])
 
   useEffect(() => {
-    setSupported(typeof window !== 'undefined' && 'speechSynthesis' in window)
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+      setSupported(false)
+      return
+    }
+
+    // Voices may load asynchronously in some browsers
+    const loadVoices = () => setVoices(window.speechSynthesis.getVoices())
+    loadVoices()
+    window.speechSynthesis.addEventListener('voiceschanged', loadVoices)
+    return () => window.speechSynthesis.removeEventListener('voiceschanged', loadVoices)
   }, [])
 
   // Stop speech when language changes
@@ -59,7 +69,6 @@ export function useSpeech() {
     utterance.lang = bcp47
 
     // Try to find a matching voice for this language
-    const voices = window.speechSynthesis.getVoices()
     const langPrefix = bcp47.split('-')[0]
     const match = voices.find(v => v.lang === bcp47)
       || voices.find(v => v.lang.startsWith(langPrefix))
@@ -73,7 +82,7 @@ export function useSpeech() {
     utterance.onerror = () => setSpeaking(false)
 
     window.speechSynthesis.speak(utterance)
-  }, [i18n.language, supported])
+  }, [i18n.language, supported, voices])
 
   const stop = useCallback(() => {
     if (!supported) return
