@@ -1,11 +1,27 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr" data-theme="light">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Gram Sahayak — Voice-first AI assistant helping rural India access government welfare schemes in 23 Indian languages." />
   <meta name="theme-color" content="#1a6b3c" />
   <title>Gram Sahayak — Voice-First AI for Rural India</title>
+  <script>
+    // Apply saved theme immediately to prevent flash of unstyled content
+    (function() {
+      try {
+        var t = localStorage.getItem('gram-sahayak-theme');
+        if (t) { document.documentElement.setAttribute('data-theme', t); }
+        else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        } else { document.documentElement.setAttribute('data-theme', 'light'); }
+        var c = localStorage.getItem('gram-sahayak-contrast');
+        if (c) { document.documentElement.setAttribute('data-contrast', c); }
+        var s = localStorage.getItem('gram-sahayak-font-scale');
+        if (s) { document.documentElement.style.fontSize = (parseFloat(s) * 100) + '%'; }
+      } catch(e) { document.documentElement.setAttribute('data-theme', 'light'); }
+    })();
+  </script>
   <link rel="stylesheet" href="styles.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -135,32 +151,32 @@
           </p>
         </div>
         <div class="features-grid">
-          <article class="feature-card" tabindex="0">
+          <article class="feature-card">
             <div class="feature-icon" aria-hidden="true">🗣️</div>
             <h3>Voice-First Interface</h3>
             <p>Simply speak in your language. No typing, no reading, no complex navigation needed.</p>
           </article>
-          <article class="feature-card" tabindex="0">
+          <article class="feature-card">
             <div class="feature-icon" aria-hidden="true">🌐</div>
             <h3>23 Languages</h3>
             <p>All 22 scheduled Indian languages plus English. Includes dialect detection for regional variations.</p>
           </article>
-          <article class="feature-card" tabindex="0">
+          <article class="feature-card">
             <div class="feature-icon" aria-hidden="true">🔍</div>
             <h3>Smart Scheme Matching</h3>
             <p>AI-powered eligibility matching across 700+ central and state government welfare schemes.</p>
           </article>
-          <article class="feature-card" tabindex="0">
+          <article class="feature-card">
             <div class="feature-icon" aria-hidden="true">📝</div>
             <h3>Guided Form Filling</h3>
             <p>Conversational form completion — answer questions naturally and we fill the paperwork for you.</p>
           </article>
-          <article class="feature-card" tabindex="0">
+          <article class="feature-card">
             <div class="feature-icon" aria-hidden="true">📄</div>
             <h3>Document Guidance</h3>
             <p>Step-by-step guidance on required documents — what you need, where to get it, and how to submit.</p>
           </article>
-          <article class="feature-card" tabindex="0">
+          <article class="feature-card">
             <div class="feature-icon" aria-hidden="true">📊</div>
             <h3>Application Tracking</h3>
             <p>Track your application status in real-time through voice updates and notifications.</p>
@@ -292,35 +308,35 @@
           </p>
         </div>
         <ol class="steps-timeline" role="list">
-          <li class="step" tabindex="0">
+          <li class="step">
             <div class="step-number" aria-hidden="true">1</div>
             <div class="step-content">
               <h3>Speak Your Language</h3>
               <p>Start a conversation in any of 23 supported Indian languages. Our AI detects your dialect automatically.</p>
             </div>
           </li>
-          <li class="step" tabindex="0">
+          <li class="step">
             <div class="step-number" aria-hidden="true">2</div>
             <div class="step-content">
               <h3>Share Your Details</h3>
               <p>Tell us about yourself through simple conversational questions — age, location, occupation, income level.</p>
             </div>
           </li>
-          <li class="step" tabindex="0">
+          <li class="step">
             <div class="step-number" aria-hidden="true">3</div>
             <div class="step-content">
               <h3>Discover Eligible Schemes</h3>
               <p>Our AI matches your profile against 700+ government schemes to find the ones you qualify for.</p>
             </div>
           </li>
-          <li class="step" tabindex="0">
+          <li class="step">
             <div class="step-number" aria-hidden="true">4</div>
             <div class="step-content">
               <h3>Fill Forms by Voice</h3>
               <p>Answer questions naturally and we complete the application forms for you. No paperwork required.</p>
             </div>
           </li>
-          <li class="step" tabindex="0">
+          <li class="step">
             <div class="step-number" aria-hidden="true">5</div>
             <div class="step-content">
               <h3>Submit &amp; Track</h3>
@@ -342,32 +358,32 @@
           </p>
         </div>
         <div class="scheme-categories">
-          <div class="scheme-card" tabindex="0">
+          <div class="scheme-card">
             <div class="scheme-icon" aria-hidden="true">🌾</div>
             <h3>Agriculture</h3>
             <p>PM-KISAN, crop insurance, irrigation subsidies, and more for farmers.</p>
           </div>
-          <div class="scheme-card" tabindex="0">
+          <div class="scheme-card">
             <div class="scheme-icon" aria-hidden="true">🏥</div>
             <h3>Healthcare</h3>
             <p>Ayushman Bharat, maternal health, and free treatment coverage.</p>
           </div>
-          <div class="scheme-card" tabindex="0">
+          <div class="scheme-card">
             <div class="scheme-icon" aria-hidden="true">🎓</div>
             <h3>Education</h3>
             <p>Scholarships, mid-day meals, skill training, and digital literacy programs.</p>
           </div>
-          <div class="scheme-card" tabindex="0">
+          <div class="scheme-card">
             <div class="scheme-icon" aria-hidden="true">🏠</div>
             <h3>Housing</h3>
             <p>PM Awas Yojana, rural housing subsidies, and sanitation programs.</p>
           </div>
-          <div class="scheme-card" tabindex="0">
+          <div class="scheme-card">
             <div class="scheme-icon" aria-hidden="true">💼</div>
             <h3>Employment</h3>
             <p>MGNREGA, startup support, self-employment schemes, and skill development.</p>
           </div>
-          <div class="scheme-card" tabindex="0">
+          <div class="scheme-card">
             <div class="scheme-icon" aria-hidden="true">👩</div>
             <h3>Women &amp; Child</h3>
             <p>Beti Bachao, maternity benefits, nutrition support, and widow pensions.</p>

@@ -758,8 +758,7 @@ section {
   transition: all var(--transition-normal);
 }
 
-.feature-card:hover,
-.feature-card:focus-visible {
+.feature-card:hover {
   transform: translateY(-4px);
   box-shadow: var(--shadow-lg);
   border-color: var(--color-primary);
@@ -894,8 +893,7 @@ section {
   line-height: 1.7;
 }
 
-.step:hover .step-number,
-.step:focus-visible .step-number {
+.step:hover .step-number {
   background: var(--color-accent);
   transform: scale(1.1);
   transition: all var(--transition-normal);
@@ -947,13 +945,11 @@ section {
   transition: transform var(--transition-normal);
 }
 
-.scheme-card:hover::before,
-.scheme-card:focus-visible::before {
+.scheme-card:hover::before {
   transform: scaleX(1);
 }
 
-.scheme-card:hover,
-.scheme-card:focus-visible {
+.scheme-card:hover {
   transform: translateY(-4px);
   box-shadow: var(--shadow-lg);
 }

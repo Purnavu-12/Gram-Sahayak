@@ -34,6 +34,9 @@
       setTheme(savedTheme);
     } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
       setTheme('dark');
+    } else {
+      // Ensure icon is in sync with the inline <head> script's choice
+      setTheme(document.documentElement.getAttribute('data-theme') || 'light');
     }
   } catch (_) {
     // localStorage unavailable
@@ -192,16 +195,24 @@
     }
   }
 
-  var langInterval = setInterval(rotateLang, 2000);
+  var langInterval = null;
+  if (langItems.length > 0) {
+    langInterval = setInterval(rotateLang, 2000);
+  }
 
   // Pause rotation on hover
   var langWheel = document.getElementById('language-wheel');
   if (langWheel) {
     langWheel.addEventListener('mouseenter', function () {
-      clearInterval(langInterval);
+      if (langInterval !== null) {
+        clearInterval(langInterval);
+        langInterval = null;
+      }
     });
     langWheel.addEventListener('mouseleave', function () {
-      langInterval = setInterval(rotateLang, 2000);
+      if (langInterval === null && langItems.length > 0) {
+        langInterval = setInterval(rotateLang, 2000);
+      }
     });
   }
 
@@ -254,6 +265,8 @@
   var micButton = document.getElementById('mic-button');
   var micStatus = document.getElementById('mic-status');
   var demoResponse = document.getElementById('demo-response');
+  var modalTrigger = null;
+  var micTimeouts = [];
 
   var triggerButtons = [
     document.getElementById('try-voice-btn'),
@@ -261,8 +274,9 @@
     document.getElementById('start-btn')
   ];
 
-  function openModal() {
+  function openModal(trigger) {
     if (voiceModal) {
+      modalTrigger = trigger || null;
       voiceModal.hidden = false;
       voiceModal.querySelector('.modal-close').focus();
       document.body.style.overflow = 'hidden';
@@ -271,6 +285,10 @@
 
   function closeModal() {
     if (voiceModal) {
+      // Clear any pending mic demo timeouts to prevent race conditions
+      micTimeouts.forEach(function (id) { clearTimeout(id); });
+      micTimeouts = [];
+
       voiceModal.hidden = true;
       document.body.style.overflow = '';
       if (micButton) micButton.classList.remove('active');
@@ -279,11 +297,40 @@
         demoResponse.classList.remove('visible');
         demoResponse.textContent = '';
       }
+      // Restore focus to the button that opened the modal
+      if (modalTrigger && typeof modalTrigger.focus === 'function') {
+        modalTrigger.focus();
+        modalTrigger = null;
+      }
     }
   }
 
+  // Focus trap: keep Tab/Shift+Tab within the modal
+  if (voiceModal) {
+    voiceModal.addEventListener('keydown', function (e) {
+      if (e.key !== 'Tab') return;
+      var focusable = voiceModal.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusable.length === 0) return;
+      var first = focusable[0];
+      var last = focusable[focusable.length - 1];
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    });
+  }
+
   triggerButtons.forEach(function (btn) {
-    if (btn) btn.addEventListener('click', openModal);
+    if (btn) btn.addEventListener('click', function () { openModal(btn); });
   });
 
   if (modalClose) modalClose.addEventListener('click', closeModal);
@@ -322,13 +369,13 @@
         demoResponse.textContent = '';
       }
 
-      // Simulate listening
-      setTimeout(function () {
+      // Simulate listening (store timeout IDs so they can be cleared)
+      micTimeouts.push(setTimeout(function () {
         if (micStatus) micStatus.textContent = 'Processing...';
-      }, 2000);
+      }, 2000));
 
       // Show response
-      setTimeout(function () {
+      micTimeouts.push(setTimeout(function () {
         micButton.classList.remove('active');
         if (micStatus) micStatus.textContent = 'Tap to speak again';
         if (demoResponse) {
@@ -336,12 +383,12 @@
           demoResponse.classList.add('visible');
           demoResponseIndex = (demoResponseIndex + 1) % demoResponses.length;
         }
-      }, 3500);
+      }, 3500));
     });
   }
 
   // --- Smooth scroll for anchor links ---
-  document.querySelectorAll('a[href^="#"]').forEach(function (link) {
+  document.querySelectorAll('a[href^="#"]:not([href="#"])').forEach(function (link) {
     link.addEventListener('click', function (e) {
       var target = document.querySelector(this.getAttribute('href'));
       if (target) {

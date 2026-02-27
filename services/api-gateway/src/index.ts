@@ -13,9 +13,6 @@ const port = process.env.PORT || 3000;
 app.use(express.json({ limit: '10mb' })); // Increased limit for audio data
 app.use(tracingMiddleware('api-gateway'));
 
-// Serve the frontend website as static files
-app.use(express.static(path.join(__dirname, '../../../website')));
-
 // Initialize health monitor
 const healthMonitor = new HealthMonitor();
 
@@ -81,6 +78,9 @@ app.post('/circuit-breakers/reset', (req, res) => {
   registry.resetAll();
   res.json({ message: 'All circuit breakers reset' });
 });
+
+// Serve the frontend website as static files (after API routes to avoid shadowing)
+app.use(express.static(path.join(__dirname, '../../../website')));
 
 app.listen(port, () => {
   console.log(`API Gateway listening on port ${port}`);
