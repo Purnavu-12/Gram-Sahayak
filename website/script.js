@@ -702,4 +702,27 @@
     }
   });
 
+  // --- Back to Top Button ---
+  var backToTop = document.getElementById('back-to-top');
+  if (backToTop) {
+    window.addEventListener('scroll', function () {
+      if (window.scrollY > 600) {
+        backToTop.hidden = false;
+        backToTop.classList.add('visible');
+      } else {
+        backToTop.classList.remove('visible');
+        // Keep hidden attribute in sync after transition
+        setTimeout(function () {
+          if (!backToTop.classList.contains('visible')) {
+            backToTop.hidden = true;
+          }
+        }, 300);
+      }
+    }, { passive: true });
+
+    backToTop.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+
 })();
