@@ -1,4 +1,5 @@
 import express from 'express';
+import path from 'path';
 import rateLimit from 'express-rate-limit';
 import { authMiddleware } from './middleware/auth';
 import { createProxyRouter, getCircuitBreakerRegistry } from './routes/proxy';
@@ -77,6 +78,9 @@ app.post('/circuit-breakers/reset', (req, res) => {
   registry.resetAll();
   res.json({ message: 'All circuit breakers reset' });
 });
+
+// Serve the frontend website as static files (after API routes to avoid shadowing)
+app.use(express.static(path.join(__dirname, '../../../website')));
 
 app.listen(port, () => {
   console.log(`API Gateway listening on port ${port}`);

@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Gram Sahayak — Voice-first AI assistant helping rural India access government welfare schemes in 23 Indian languages." />
+  <meta name="theme-color" content="#0c0e1a" />
+  <title>Gram Sahayak — Voice-First AI for Rural India</title>
+  <script>
+    // Apply saved theme immediately to prevent flash of unstyled content
+    (function() {
+      try {
+        var t = localStorage.getItem('gram-sahayak-theme');
+        if (t) { document.documentElement.setAttribute('data-theme', t); }
+        else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+          document.documentElement.setAttribute('data-theme', 'light');
+        } else { document.documentElement.setAttribute('data-theme', 'dark'); }
+        var c = localStorage.getItem('gram-sahayak-contrast');
+        if (c) { document.documentElement.setAttribute('data-contrast', c); }
+        var s = localStorage.getItem('gram-sahayak-font-scale');
+        if (s) { document.documentElement.style.fontSize = (parseFloat(s) * 100) + '%'; }
+      } catch(e) { document.documentElement.setAttribute('data-theme', 'dark'); }
+    })();
+  </script>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;600;700&family=Noto+Sans+Bengali:wght@400;700&family=Noto+Sans+Telugu:wght@400;700&family=Noto+Sans+Tamil:wght@400;700&family=Noto+Sans+Gujarati:wght@400;700&family=Noto+Sans+Kannada:wght@400;700&family=Noto+Sans+Malayalam:wght@400;700&family=Noto+Sans+Gurmukhi:wght@400;700&family=Noto+Sans+Oriya:wght@400;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <!-- Skip to content for accessibility -->
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <!-- Header / Navigation -->
+  <header class="site-header" role="banner">
+    <nav class="nav-container" aria-label="Main navigation">
+      <a href="#" class="logo" aria-label="Gram Sahayak Home">
+        <span class="logo-icon" aria-hidden="true">🌾</span>
+        <span class="logo-text">Gram Sahayak</span>
+      </a>
+      <ul class="nav-links" role="list">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#languages">Languages</a></li>
+        <li><a href="#how-it-works">How It Works</a></li>
+        <li><a href="#schemes">Schemes</a></li>
+      </ul>
+      <div class="nav-actions">
+        <button
+          class="theme-toggle"
+          id="theme-toggle"
+          aria-label="Toggle dark mode"
+          title="Toggle dark mode"
+        >
+          <span class="theme-icon" aria-hidden="true">🌙</span>
+        </button>
+        <button
+          class="btn btn-primary btn-sm"
+          id="start-btn"
+          aria-label="Start using Gram Sahayak"
+        >
+          Get Started
+        </button>
+        <button class="hamburger" id="hamburger" aria-label="Toggle navigation menu" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <main id="main-content">
+    <!-- Hero Section -->
+    <section class="hero" aria-labelledby="hero-heading">
+      <div class="hero-bg" aria-hidden="true">
+        <div class="hero-pattern"></div>
+        <div class="floating-elements">
+          <span class="float-item float-1">🎤</span>
+          <span class="float-item float-2">📋</span>
+          <span class="float-item float-3">🏛️</span>
+          <span class="float-item float-4">🌾</span>
+          <span class="float-item float-5">🗣️</span>
+        </div>
+      </div>
+      <div class="hero-content">
+        <div class="hero-badge" aria-hidden="true">
+          <span class="pulse-dot"></span>
+          Voice-First AI Assistant
+        </div>
+        <h1 id="hero-heading">
+          Empowering <span class="highlight">Rural India</span> with
+          <span class="highlight">Voice Technology</span>
+        </h1>
+        <p class="hero-subtitle">
+          Access 700+ government welfare schemes through simple voice conversations
+          in <strong>23 Indian languages</strong>. No forms. No jargon. Just speak.
+        </p>
+        <div class="hero-actions">
+          <button class="btn btn-primary btn-lg" id="try-voice-btn" aria-label="Try voice assistant demo">
+            <span class="btn-icon" aria-hidden="true">🎤</span>
+            Try Voice Demo
+          </button>
+          <a href="#how-it-works" class="btn btn-outline btn-lg">
+            Learn More
+          </a>
+        </div>
+        <div class="hero-stats" aria-label="Key statistics">
+          <div class="stat">
+            <span class="stat-number" data-count="700">0</span><span class="stat-suffix">+</span>
+            <span class="stat-label">Schemes</span>
+          </div>
+          <div class="stat">
+            <span class="stat-number" data-count="23">0</span>
+            <span class="stat-label">Languages</span>
+          </div>
+          <div class="stat">
+            <span class="stat-number" data-count="100">0</span><span class="stat-suffix">%</span>
+            <span class="stat-label">Voice-First</span>
+          </div>
+        </div>
+      </div>
+      <div class="hero-visual" aria-hidden="true">
+        <div class="phone-mockup">
+          <div class="phone-screen">
+            <div class="chat-demo" id="chat-demo">
+              <div class="chat-header-demo">
+                <span class="chat-status"></span>
+                Gram Sahayak
+              </div>
+              <div class="chat-messages" id="chat-messages">
+                <!-- Messages populated by JS -->
+              </div>
+              <div class="chat-input-demo">
+                <div class="voice-wave" id="voice-wave">
+                  <span></span><span></span><span></span><span></span><span></span>
+                </div>
+                <span class="mic-label">Listening...</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features" aria-labelledby="features-heading">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">Features</span>
+          <h2 id="features-heading">Built for Every Indian Citizen</h2>
+          <p class="section-desc">
+            Designed with accessibility at its core — no literacy or tech skills required.
+          </p>
+        </div>
+        <div class="features-grid">
+          <article class="feature-card">
+            <div class="feature-icon" aria-hidden="true">🗣️</div>
+            <h3>Voice-First Interface</h3>
+            <p>Simply speak in your language. No typing, no reading, no complex navigation needed.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon" aria-hidden="true">🌐</div>
+            <h3>23 Languages</h3>
+            <p>All 22 scheduled Indian languages plus English. Includes dialect detection for regional variations.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon" aria-hidden="true">🔍</div>
+            <h3>Smart Scheme Matching</h3>
+            <p>AI-powered eligibility matching across 700+ central and state government welfare schemes.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon" aria-hidden="true">📝</div>
+            <h3>Guided Form Filling</h3>
+            <p>Conversational form completion — answer questions naturally and we fill the paperwork for you.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon" aria-hidden="true">📄</div>
+            <h3>Document Guidance</h3>
+            <p>Step-by-step guidance on required documents — what you need, where to get it, and how to submit.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon" aria-hidden="true">📊</div>
+            <h3>Application Tracking</h3>
+            <p>Track your application status in real-time through voice updates and notifications.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Language Support Section -->
+    <section class="languages" id="languages" aria-labelledby="languages-heading">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">Languages</span>
+          <h2 id="languages-heading">Speak in Your Language</h2>
+          <p class="section-desc">
+            Supporting all 22 scheduled Indian languages plus English — with dialect-level understanding.
+          </p>
+        </div>
+        <div class="language-showcase">
+          <div class="language-wheel" id="language-wheel" aria-label="Supported languages rotating display">
+            <div class="lang-item active" data-lang="hi">
+              <span class="lang-native">हिन्दी</span>
+              <span class="lang-english">Hindi</span>
+            </div>
+            <div class="lang-item" data-lang="bn">
+              <span class="lang-native">বাংলা</span>
+              <span class="lang-english">Bengali</span>
+            </div>
+            <div class="lang-item" data-lang="te">
+              <span class="lang-native">తెలుగు</span>
+              <span class="lang-english">Telugu</span>
+            </div>
+            <div class="lang-item" data-lang="mr">
+              <span class="lang-native">मराठी</span>
+              <span class="lang-english">Marathi</span>
+            </div>
+            <div class="lang-item" data-lang="ta">
+              <span class="lang-native">தமிழ்</span>
+              <span class="lang-english">Tamil</span>
+            </div>
+            <div class="lang-item" data-lang="gu">
+              <span class="lang-native">ગુજરાતી</span>
+              <span class="lang-english">Gujarati</span>
+            </div>
+            <div class="lang-item" data-lang="kn">
+              <span class="lang-native">ಕನ್ನಡ</span>
+              <span class="lang-english">Kannada</span>
+            </div>
+            <div class="lang-item" data-lang="ml">
+              <span class="lang-native">മലയാളം</span>
+              <span class="lang-english">Malayalam</span>
+            </div>
+            <div class="lang-item" data-lang="or">
+              <span class="lang-native">ଓଡ଼ିଆ</span>
+              <span class="lang-english">Odia</span>
+            </div>
+            <div class="lang-item" data-lang="pa">
+              <span class="lang-native">ਪੰਜਾਬੀ</span>
+              <span class="lang-english">Punjabi</span>
+            </div>
+            <div class="lang-item" data-lang="as">
+              <span class="lang-native">অসমীয়া</span>
+              <span class="lang-english">Assamese</span>
+            </div>
+            <div class="lang-item" data-lang="ur">
+              <span class="lang-native">اردو</span>
+              <span class="lang-english">Urdu</span>
+            </div>
+            <div class="lang-item" data-lang="mai">
+              <span class="lang-native">मैथिली</span>
+              <span class="lang-english">Maithili</span>
+            </div>
+            <div class="lang-item" data-lang="sa">
+              <span class="lang-native">संस्कृतम्</span>
+              <span class="lang-english">Sanskrit</span>
+            </div>
+            <div class="lang-item" data-lang="ks">
+              <span class="lang-native">कॉशुर</span>
+              <span class="lang-english">Kashmiri</span>
+            </div>
+            <div class="lang-item" data-lang="ne">
+              <span class="lang-native">नेपाली</span>
+              <span class="lang-english">Nepali</span>
+            </div>
+            <div class="lang-item" data-lang="sd">
+              <span class="lang-native">سنڌي</span>
+              <span class="lang-english">Sindhi</span>
+            </div>
+            <div class="lang-item" data-lang="doi">
+              <span class="lang-native">डोगरी</span>
+              <span class="lang-english">Dogri</span>
+            </div>
+            <div class="lang-item" data-lang="kok">
+              <span class="lang-native">कोंकणी</span>
+              <span class="lang-english">Konkani</span>
+            </div>
+            <div class="lang-item" data-lang="mni">
+              <span class="lang-native">মৈতৈলোন্</span>
+              <span class="lang-english">Manipuri</span>
+            </div>
+            <div class="lang-item" data-lang="brx">
+              <span class="lang-native">बर'</span>
+              <span class="lang-english">Bodo</span>
+            </div>
+            <div class="lang-item" data-lang="sat">
+              <span class="lang-native">ᱥᱟᱱᱛᱟᱲᱤ</span>
+              <span class="lang-english">Santali</span>
+            </div>
+            <div class="lang-item" data-lang="en">
+              <span class="lang-native">English</span>
+              <span class="lang-english">English</span>
+            </div>
+          </div>
+          <p class="lang-count" aria-live="polite">
+            <strong id="active-lang">Hindi</strong> — and 22 more languages supported
+          </p>
+          <p id="lang-geo-indicator" class="lang-geo-note" hidden>📍 Language suggested based on your location. Click any language to change.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="how-it-works" id="how-it-works" aria-labelledby="how-heading">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">How It Works</span>
+          <h2 id="how-heading">Simple as Having a Conversation</h2>
+          <p class="section-desc">
+            From discovering eligible schemes to submitting applications — all through voice.
+          </p>
+        </div>
+        <ol class="steps-timeline" role="list">
+          <li class="step">
+            <div class="step-number" aria-hidden="true">1</div>
+            <div class="step-content">
+              <h3>Speak Your Language</h3>
+              <p>Start a conversation in any of 23 supported Indian languages. Our AI detects your dialect automatically.</p>
+            </div>
+          </li>
+          <li class="step">
+            <div class="step-number" aria-hidden="true">2</div>
+            <div class="step-content">
+              <h3>Share Your Details</h3>
+              <p>Tell us about yourself through simple conversational questions — age, location, occupation, income level.</p>
+            </div>
+          </li>
+          <li class="step">
+            <div class="step-number" aria-hidden="true">3</div>
+            <div class="step-content">
+              <h3>Discover Eligible Schemes</h3>
+              <p>Our AI matches your profile against 700+ government schemes to find the ones you qualify for.</p>
+            </div>
+          </li>
+          <li class="step">
+            <div class="step-number" aria-hidden="true">4</div>
+            <div class="step-content">
+              <h3>Fill Forms by Voice</h3>
+              <p>Answer questions naturally and we complete the application forms for you. No paperwork required.</p>
+            </div>
+          </li>
+          <li class="step">
+            <div class="step-number" aria-hidden="true">5</div>
+            <div class="step-content">
+              <h3>Submit &amp; Track</h3>
+              <p>Applications are submitted on your behalf. Track status anytime through a simple voice query.</p>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- Schemes Highlight Section -->
+    <section class="schemes" id="schemes" aria-labelledby="schemes-heading">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">Welfare Schemes</span>
+          <h2 id="schemes-heading">700+ Government Schemes, One Voice Away</h2>
+          <p class="section-desc">
+            From agriculture to healthcare, education to housing — find every scheme you are eligible for.
+          </p>
+        </div>
+        <div class="scheme-categories">
+          <div class="scheme-card">
+            <div class="scheme-icon" aria-hidden="true">🌾</div>
+            <h3>Agriculture</h3>
+            <p>PM-KISAN, crop insurance, irrigation subsidies, and more for farmers.</p>
+          </div>
+          <div class="scheme-card">
+            <div class="scheme-icon" aria-hidden="true">🏥</div>
+            <h3>Healthcare</h3>
+            <p>Ayushman Bharat, maternal health, and free treatment coverage.</p>
+          </div>
+          <div class="scheme-card">
+            <div class="scheme-icon" aria-hidden="true">🎓</div>
+            <h3>Education</h3>
+            <p>Scholarships, mid-day meals, skill training, and digital literacy programs.</p>
+          </div>
+          <div class="scheme-card">
+            <div class="scheme-icon" aria-hidden="true">🏠</div>
+            <h3>Housing</h3>
+            <p>PM Awas Yojana, rural housing subsidies, and sanitation programs.</p>
+          </div>
+          <div class="scheme-card">
+            <div class="scheme-icon" aria-hidden="true">💼</div>
+            <h3>Employment</h3>
+            <p>MGNREGA, startup support, self-employment schemes, and skill development.</p>
+          </div>
+          <div class="scheme-card">
+            <div class="scheme-icon" aria-hidden="true">👩</div>
+            <h3>Women &amp; Child</h3>
+            <p>Beti Bachao, maternity benefits, nutrition support, and widow pensions.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta" aria-labelledby="cta-heading">
+      <div class="container">
+        <div class="cta-content">
+          <h2 id="cta-heading">Ready to Discover Your Entitlements?</h2>
+          <p>Start a voice conversation and find government schemes you are eligible for — in your own language.</p>
+          <button class="btn btn-primary btn-lg" id="cta-voice-btn" aria-label="Start voice conversation">
+            <span class="btn-icon" aria-hidden="true">🎤</span>
+            Start Speaking Now
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="site-footer" role="contentinfo">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <span class="logo-icon" aria-hidden="true">🌾</span>
+          <span class="logo-text">Gram Sahayak</span>
+          <p>Voice-first AI assistant empowering rural India to access government welfare schemes.</p>
+        </div>
+        <div class="footer-links">
+          <h4>Quick Links</h4>
+          <ul role="list">
+            <li><a href="#features">Features</a></li>
+            <li><a href="#languages">Languages</a></li>
+            <li><a href="#how-it-works">How It Works</a></li>
+            <li><a href="#schemes">Schemes</a></li>
+          </ul>
+        </div>
+        <div class="footer-links">
+          <h4>Services</h4>
+          <ul role="list">
+            <li><a href="#features">Voice Assistant</a></li>
+            <li><a href="#features">Scheme Finder</a></li>
+            <li><a href="#features">Form Helper</a></li>
+            <li><a href="#features">Document Guide</a></li>
+          </ul>
+        </div>
+        <div class="footer-links">
+          <h4>Accessibility</h4>
+          <ul role="list">
+            <li><button class="footer-btn" id="footer-theme-toggle">Toggle Dark Mode</button></li>
+            <li><button class="footer-btn" id="increase-font">Increase Font Size</button></li>
+            <li><button class="footer-btn" id="decrease-font">Decrease Font Size</button></li>
+            <li><button class="footer-btn" id="high-contrast-toggle">High Contrast</button></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 Gram Sahayak. Built for the people of India.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Voice Demo Modal -->
+  <div class="modal-overlay" id="voice-modal" role="dialog" aria-labelledby="modal-title" aria-modal="true" hidden>
+    <div class="modal">
+      <button class="modal-close" id="modal-close" aria-label="Close dialog">&times;</button>
+      <h2 id="modal-title">Voice Assistant Demo</h2>
+      <p>Experience Gram Sahayak's voice-first interface. Click the microphone to start speaking.</p>
+      <div class="demo-area">
+        <button class="mic-button" id="mic-button" aria-label="Press to speak">
+          <span class="mic-icon" aria-hidden="true">🎤</span>
+          <span class="mic-ring"></span>
+        </button>
+        <p class="mic-status" id="mic-status" aria-live="polite">Tap to start speaking</p>
+        <div class="demo-response" id="demo-response" aria-live="polite"></div>
+      </div>
+      <p class="demo-note">
+        <em>This is a demo simulation. In the full version, your voice is processed by our AI engine supporting 23 Indian languages.</em>
+      </p>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
