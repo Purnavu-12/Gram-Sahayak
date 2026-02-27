@@ -702,4 +702,36 @@
     }
   });
 
+  // --- Back to Top Button ---
+  var backToTop = document.getElementById('back-to-top');
+  if (backToTop) {
+    var backToTopTimeout = null;
+    window.addEventListener('scroll', function () {
+      if (window.scrollY > 600) {
+        if (backToTopTimeout !== null) {
+          clearTimeout(backToTopTimeout);
+          backToTopTimeout = null;
+        }
+        backToTop.hidden = false;
+        backToTop.classList.add('visible');
+      } else {
+        backToTop.classList.remove('visible');
+        // Keep hidden attribute in sync after transition
+        if (backToTopTimeout !== null) {
+          clearTimeout(backToTopTimeout);
+        }
+        backToTopTimeout = setTimeout(function () {
+          if (!backToTop.classList.contains('visible')) {
+            backToTop.hidden = true;
+          }
+          backToTopTimeout = null;
+        }, 300);
+      }
+    }, { passive: true });
+
+    backToTop.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+
 })();

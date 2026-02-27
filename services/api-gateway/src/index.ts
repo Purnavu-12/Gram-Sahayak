@@ -1,4 +1,5 @@
 import express from 'express';
+import cors from 'cors';
 import path from 'path';
 import rateLimit from 'express-rate-limit';
 import { authMiddleware } from './middleware/auth';
@@ -12,6 +13,17 @@ const port = process.env.PORT || 3000;
 
 app.use(express.json({ limit: '10mb' })); // Increased limit for audio data
 app.use(tracingMiddleware('api-gateway'));
+
+// CORS configuration
+const corsOrigin = process.env.NODE_ENV === 'production'
+  ? process.env.CORS_ORIGIN || false
+  : process.env.CORS_ORIGIN || '*';
+app.use(cors({
+  origin: corsOrigin,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+}));
 
 // Initialize health monitor
 const healthMonitor = new HealthMonitor();
@@ -80,7 +92,8 @@ app.post('/circuit-breakers/reset', (req, res) => {
 });
 
 // Serve the frontend website as static files (after API routes to avoid shadowing)
-app.use(express.static(path.join(__dirname, '../../../website')));
+const websitePath = path.join(__dirname, '../../../website');
+app.use(express.static(websitePath));
 
 app.listen(port, () => {
   console.log(`API Gateway listening on port ${port}`);
