@@ -22,6 +22,7 @@ app.use(cors({
   origin: corsOrigin,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
 }));
 
 // Initialize health monitor
@@ -93,14 +94,6 @@ app.post('/circuit-breakers/reset', (req, res) => {
 // Serve the frontend website as static files (after API routes to avoid shadowing)
 const websitePath = path.join(__dirname, '../../../website');
 app.use(express.static(websitePath));
-
-// SPA fallback: serve index.html for unmatched non-API GET requests (client-side routing)
-app.get('*', (req, res, next) => {
-  if (req.path.startsWith('/api/') || req.path.startsWith('/health') || req.path.startsWith('/circuit-breakers')) {
-    return next();
-  }
-  res.sendFile(path.join(websitePath, 'index.html'));
-});
 
 app.listen(port, () => {
   console.log(`API Gateway listening on port ${port}`);

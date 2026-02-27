@@ -1382,3 +1382,13 @@ section {
   transform: translateY(-3px);
   box-shadow: var(--shadow-lg);
 }
+
+@media (max-width: 480px) {
+  .back-to-top {
+    bottom: var(--space-md);
+    right: var(--space-md);
+    width: 42px;
+    height: 42px;
+    font-size: 1.1rem;
+  }
+}
