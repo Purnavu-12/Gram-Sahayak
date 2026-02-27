@@ -1,4 +1,5 @@
 import express from 'express';
+import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import { authMiddleware } from './middleware/auth';
 import { createProxyRouter, getCircuitBreakerRegistry } from './routes/proxy';
@@ -10,6 +11,15 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(express.json({ limit: '10mb' })); // Increased limit for audio data
+
+// CORS configuration
+app.use(cors({
+  origin: process.env.CORS_ORIGIN || '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+}));
+
 app.use(tracingMiddleware('api-gateway'));
 
 // Initialize health monitor

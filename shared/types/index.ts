@@ -16,3 +16,6 @@ export * from './form-generator';
 export * from './user-profile';
 
 export * from './accessibility';
+
+// Bedrock integration types
+export * from './bedrock';

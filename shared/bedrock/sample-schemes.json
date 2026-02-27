@@ -1,0 +1,484 @@
+{
+  "metadata": {
+    "version": "1.0.0",
+    "totalSchemes": 20,
+    "languages": ["en", "hi"],
+    "categories": ["agriculture", "health", "education", "employment", "housing", "social_security", "women", "pension"]
+  },
+  "schemes": [
+    {
+      "schemeId": "PM-KISAN",
+      "name": {
+        "en": "PM-KISAN (Farmer Income Support)",
+        "hi": "पीएम-किसान (किसान आय सहायता)"
+      },
+      "description": {
+        "en": "Direct income support of ₹6000 per year to farmer families in three equal installments.",
+        "hi": "किसान परिवारों को तीन समान किस्तों में प्रति वर्ष ₹6000 की प्रत्यक्ष आय सहायता।"
+      },
+      "eligibility": {
+        "incomeMax": 200000,
+        "state": ["all"]
+      },
+      "benefits": {
+        "en": "₹6000 per year in three installments of ₹2000 each",
+        "hi": "₹2000 की तीन किस्तों में प्रति वर्ष ₹6000"
+      },
+      "applicationProcess": {
+        "en": "Apply online at pmkisan.gov.in with Aadhaar, land records, and bank details.",
+        "hi": "आधार, भूमि रिकॉर्ड और बैंक विवरण के साथ pmkisan.gov.in पर ऑनलाइन आवेदन करें।"
+      }
+    },
+    {
+      "schemeId": "MGNREGA",
+      "name": {
+        "en": "MGNREGA (Rural Employment Guarantee)",
+        "hi": "मनरेगा (ग्रामीण रोजगार गारंटी)"
+      },
+      "description": {
+        "en": "Guarantees 100 days of wage employment per year to every rural household whose adult members volunteer for unskilled manual work.",
+        "hi": "प्रत्येक ग्रामीण परिवार के वयस्क सदस्यों को जो अकुशल शारीरिक कार्य के लिए स्वेच्छा से कार्य करते हैं, प्रति वर्ष 100 दिन के मजदूरी रोजगार की गारंटी।"
+      },
+      "eligibility": {
+        "ageMin": 18,
+        "state": ["all"]
+      },
+      "benefits": {
+        "en": "100 days guaranteed employment per year at minimum wage rates",
+        "hi": "न्यूनतम मजदूरी दरों पर प्रति वर्ष 100 दिन का गारंटीकृत रोजगार"
+      },
+      "applicationProcess": {
+        "en": "Register at local Gram Panchayat office with proof of residence and age.",
+        "hi": "निवास और आयु के प्रमाण के साथ स्थानीय ग्राम पंचायत कार्यालय में पंजीकरण करें।"
+      }
+    },
+    {
+      "schemeId": "PMJDY",
+      "name": {
+        "en": "PM Jan Dhan Yojana (Financial Inclusion)",
+        "hi": "पीएम जन धन योजना (वित्तीय समावेशन)"
+      },
+      "description": {
+        "en": "Universal banking access with zero balance accounts, RuPay debit card, and insurance coverage for unbanked population.",
+        "hi": "बिना बैंक खाते वाली आबादी के लिए शून्य शेष खातों, रुपे डेबिट कार्ड और बीमा कवरेज के साथ सार्वभौमिक बैंकिंग पहुंच।"
+      },
+      "eligibility": {
+        "ageMin": 10,
+        "state": ["all"]
+      },
+      "benefits": {
+        "en": "Zero balance bank account, RuPay debit card, ₹2 lakh accident insurance, ₹30,000 life insurance",
+        "hi": "शून्य शेष बैंक खाता, रुपे डेबिट कार्ड, ₹2 लाख दुर्घटना बीमा, ₹30,000 जीवन बीमा"
+      },
+      "applicationProcess": {
+        "en": "Visit any bank branch with Aadhaar or other identity proof.",
+        "hi": "आधार या अन्य पहचान प्रमाण के साथ किसी भी बैंक शाखा में जाएं।"
+      }
+    },
+    {
+      "schemeId": "AYUSHMAN-BHARAT",
+      "name": {
+        "en": "Ayushman Bharat (Health Insurance)",
+        "hi": "आयुष्मान भारत (स्वास्थ्य बीमा)"
+      },
+      "description": {
+        "en": "Provides health insurance coverage of ₹5 lakh per family per year for secondary and tertiary care hospitalization to poor and vulnerable families.",
+        "hi": "गरीब और कमजोर परिवारों को माध्यमिक और तृतीयक देखभाल अस्पताल में भर्ती के लिए प्रति परिवार प्रति वर्ष ₹5 लाख का स्वास्थ्य बीमा कवरेज।"
+      },
+      "eligibility": {
+        "incomeMax": 200000,
+        "state": ["all"]
+      },
+      "benefits": {
+        "en": "₹5 lakh per family per year for hospitalization expenses",
+        "hi": "अस्पताल में भर्ती खर्चों के लिए प्रति परिवार प्रति वर्ष ₹5 लाख"
+      },
+      "applicationProcess": {
+        "en": "Check eligibility at mera.pmjay.gov.in or visit Common Service Centre with Aadhaar.",
+        "hi": "mera.pmjay.gov.in पर पात्रता जांचें या आधार के साथ सामान्य सेवा केंद्र पर जाएं।"
+      }
+    },
+    {
+      "schemeId": "PMAY-G",
+      "name": {
+        "en": "PM Awas Yojana Gramin (Rural Housing)",
+        "hi": "पीएम आवास योजना ग्रामीण (ग्रामीण आवास)"
+      },
+      "description": {
+        "en": "Financial assistance to build pucca houses for rural families who are houseless or living in kutcha/dilapidated houses.",
+        "hi": "ग्रामीण परिवारों को जो बेघर हैं या कच्चे/जीर्ण-शीर्ण मकानों में रह रहे हैं, पक्के मकान बनाने के लिए वित्तीय सहायता।"
+      },
+      "eligibility": {
+        "incomeMax": 300000,
+        "state": ["all"]
+      },
+      "benefits": {
+        "en": "₹1.20 lakh in plains, ₹1.30 lakh in hilly/difficult areas for house construction",
+        "hi": "मैदानी क्षेत्रों में ₹1.20 लाख, पहाड़ी/कठिन क्षेत्रों में ₹1.30 लाख मकान निर्माण हेतु"
+      },
+      "applicationProcess": {
+        "en": "Apply through Gram Panchayat. Selection based on SECC 2011 data.",
+        "hi": "ग्राम पंचायत के माध्यम से आवेदन करें। SECC 2011 डेटा के आधार पर चयन।"
+      }
+    },
+    {
+      "schemeId": "NSAP",
+      "name": {
+        "en": "National Social Assistance Programme (Pension)",
+        "hi": "राष्ट्रीय सामाजिक सहायता कार्यक्रम (पेंशन)"
+      },
+      "description": {
+        "en": "Social pension for elderly, widows, and disabled persons from BPL families.",
+        "hi": "बीपीएल परिवारों के वृद्ध, विधवाओं और विकलांग व्यक्तियों के लिए सामाजिक पेंशन।"
+      },
+      "eligibility": {
+        "ageMin": 60,
+        "incomeMax": 100000,
+        "state": ["all"]
+      },
+      "benefits": {
+        "en": "₹200-500 monthly pension depending on age and category",
+        "hi": "आयु और श्रेणी के अनुसार ₹200-500 मासिक पेंशन"
+      },
+      "applicationProcess": {
+        "en": "Apply through local Block/District office with BPL card and age proof.",
+        "hi": "बीपीएल कार्ड और आयु प्रमाण के साथ स्थानीय ब्लॉक/जिला कार्यालय से आवेदन करें।"
+      }
+    },
+    {
+      "schemeId": "MDM",
+      "name": {
+        "en": "Mid Day Meal Scheme (School Nutrition)",
+        "hi": "मध्याह्न भोजन योजना (स्कूल पोषण)"
+      },
+      "description": {
+        "en": "Free cooked meals to children in government and government-aided schools to improve nutrition and enrollment.",
+        "hi": "पोषण और नामांकन में सुधार के लिए सरकारी और सरकारी सहायता प्राप्त स्कूलों में बच्चों को मुफ्त पका हुआ भोजन।"
+      },
+      "eligibility": {
+        "ageMin": 6,
+        "ageMax": 14,
+        "state": ["all"]
+      },
+      "benefits": {
+        "en": "Free nutritious cooked meal during school days",
+        "hi": "स्कूल के दिनों में मुफ्त पौष्टिक पका हुआ भोजन"
+      },
+      "applicationProcess": {
+        "en": "Automatically available to all students enrolled in eligible schools.",
+        "hi": "पात्र स्कूलों में नामांकित सभी छात्रों को स्वचालित रूप से उपलब्ध।"
+      }
+    },
+    {
+      "schemeId": "PM-UJJWALA",
+      "name": {
+        "en": "PM Ujjwala Yojana (LPG Connection)",
+        "hi": "पीएम उज्ज्वला योजना (एलपीजी कनेक्शन)"
+      },
+      "description": {
+        "en": "Free LPG connections to women from BPL households to replace unclean cooking fuels.",
+        "hi": "अशुद्ध खाना पकाने के ईंधन को बदलने के लिए बीपीएल परिवारों की महिलाओं को मुफ्त एलपीजी कनेक्शन।"
+      },
+      "eligibility": {
+        "incomeMax": 150000,
+        "gender": ["female"],
+        "state": ["all"]
+      },
+      "benefits": {
+        "en": "Free LPG connection with cylinder and regulator, ₹1600 subsidy",
+        "hi": "सिलेंडर और रेगुलेटर के साथ मुफ्त एलपीजी कनेक्शन, ₹1600 सब्सिडी"
+      },
+      "applicationProcess": {
+        "en": "Apply at nearest LPG distributor with BPL card, Aadhaar, and bank details.",
+        "hi": "बीपीएल कार्ड, आधार और बैंक विवरण के साथ निकटतम एलपीजी वितरक पर आवेदन करें।"
+      }
+    },
+    {
+      "schemeId": "PMSBY",
+      "name": {
+        "en": "PM Suraksha Bima Yojana (Accident Insurance)",
+        "hi": "पीएम सुरक्षा बीमा योजना (दुर्घटना बीमा)"
+      },
+      "description": {
+        "en": "Accident insurance scheme providing ₹2 lakh for accidental death and full disability at just ₹20 per year.",
+        "hi": "दुर्घटना बीमा योजना जो मात्र ₹20 प्रति वर्ष पर दुर्घटनात्मक मृत्यु और पूर्ण विकलांगता के लिए ₹2 लाख प्रदान करती है।"
+      },
+      "eligibility": {
+        "ageMin": 18,
+        "ageMax": 70,
+        "state": ["all"]
+      },
+      "benefits": {
+        "en": "₹2 lakh for death/full disability, ₹1 lakh for partial disability",
+        "hi": "मृत्यु/पूर्ण विकलांगता के लिए ₹2 लाख, आंशिक विकलांगता के लिए ₹1 लाख"
+      },
+      "applicationProcess": {
+        "en": "Enroll through any bank with savings account. Auto-debit ₹20 annually.",
+        "hi": "बचत खाते वाले किसी भी बैंक से नामांकन करें। वार्षिक ₹20 ऑटो-डेबिट।"
+      }
+    },
+    {
+      "schemeId": "PMJJBY",
+      "name": {
+        "en": "PM Jeevan Jyoti Bima Yojana (Life Insurance)",
+        "hi": "पीएम जीवन ज्योति बीमा योजना (जीवन बीमा)"
+      },
+      "description": {
+        "en": "Life insurance scheme providing ₹2 lakh on death of the insured at premium of ₹436 per year.",
+        "hi": "जीवन बीमा योजना जो ₹436 प्रति वर्ष के प्रीमियम पर बीमित व्यक्ति की मृत्यु पर ₹2 लाख प्रदान करती है।"
+      },
+      "eligibility": {
+        "ageMin": 18,
+        "ageMax": 50,
+        "state": ["all"]
+      },
+      "benefits": {
+        "en": "₹2 lakh life insurance at ₹436 per year premium",
+        "hi": "₹436 प्रति वर्ष प्रीमियम पर ₹2 लाख जीवन बीमा"
+      },
+      "applicationProcess": {
+        "en": "Enroll through bank, post office, or online. Auto-debit premium annually.",
+        "hi": "बैंक, डाकघर या ऑनलाइन से नामांकन करें। वार्षिक प्रीमियम ऑटो-डेबिट।"
+      }
+    },
+    {
+      "schemeId": "APY",
+      "name": {
+        "en": "Atal Pension Yojana (Pension Scheme)",
+        "hi": "अटल पेंशन योजना (पेंशन योजना)"
+      },
+      "description": {
+        "en": "Guaranteed pension of ₹1000-5000 per month after age 60 for workers in unorganized sector.",
+        "hi": "असंगठित क्षेत्र के श्रमिकों के लिए 60 वर्ष की आयु के बाद ₹1000-5000 प्रति माह की गारंटीकृत पेंशन।"
+      },
+      "eligibility": {
+        "ageMin": 18,
+        "ageMax": 40,
+        "state": ["all"]
+      },
+      "benefits": {
+        "en": "Monthly pension of ₹1000-5000 after age 60 based on contribution",
+        "hi": "योगदान के आधार पर 60 वर्ष की आयु के बाद ₹1000-5000 मासिक पेंशन"
+      },
+      "applicationProcess": {
+        "en": "Enroll through bank or post office with Aadhaar and mobile number.",
+        "hi": "आधार और मोबाइल नंबर के साथ बैंक या डाकघर से नामांकन करें।"
+      }
+    },
+    {
+      "schemeId": "SUKANYA-SAMRIDDHI",
+      "name": {
+        "en": "Sukanya Samriddhi Yojana (Girl Child Savings)",
+        "hi": "सुकन्या समृद्धि योजना (बालिका बचत)"
+      },
+      "description": {
+        "en": "Small savings scheme for girl child with high interest rate and tax benefits.",
+        "hi": "उच्च ब्याज दर और कर लाभ के साथ बालिका के लिए लघु बचत योजना।"
+      },
+      "eligibility": {
+        "ageMax": 10,
+        "gender": ["female"],
+        "state": ["all"]
+      },
+      "benefits": {
+        "en": "High interest rate (~8%), tax-free maturity, minimum ₹250 deposit",
+        "hi": "उच्च ब्याज दर (~8%), कर-मुक्त परिपक्वता, न्यूनतम ₹250 जमा"
+      },
+      "applicationProcess": {
+        "en": "Open account at any post office or authorized bank with girl child's birth certificate.",
+        "hi": "बालिका के जन्म प्रमाण पत्र के साथ किसी भी डाकघर या अधिकृत बैंक में खाता खोलें।"
+      }
+    },
+    {
+      "schemeId": "PM-MUDRA",
+      "name": {
+        "en": "PM MUDRA Yojana (Micro Enterprise Loans)",
+        "hi": "पीएम मुद्रा योजना (सूक्ष्म उद्यम ऋण)"
+      },
+      "description": {
+        "en": "Collateral-free loans up to ₹10 lakh for micro and small enterprises in three categories.",
+        "hi": "तीन श्रेणियों में सूक्ष्म और लघु उद्यमों के लिए ₹10 लाख तक के संपार्श्विक-मुक्त ऋण।"
+      },
+      "eligibility": {
+        "ageMin": 18,
+        "state": ["all"]
+      },
+      "benefits": {
+        "en": "Shishu (up to ₹50K), Kishore (₹50K-5L), Tarun (₹5L-10L) loans without collateral",
+        "hi": "शिशु (₹50K तक), किशोर (₹50K-5L), तरुण (₹5L-10L) बिना संपार्श्विक ऋण"
+      },
+      "applicationProcess": {
+        "en": "Apply at any bank, NBFC, or MFI with business plan and identity proof.",
+        "hi": "व्यवसाय योजना और पहचान प्रमाण के साथ किसी भी बैंक, NBFC या MFI में आवेदन करें।"
+      }
+    },
+    {
+      "schemeId": "PM-FASAL-BIMA",
+      "name": {
+        "en": "PM Fasal Bima Yojana (Crop Insurance)",
+        "hi": "पीएम फसल बीमा योजना (फसल बीमा)"
+      },
+      "description": {
+        "en": "Crop insurance scheme providing financial support to farmers suffering crop loss due to natural calamities.",
+        "hi": "प्राकृतिक आपदाओं के कारण फसल हानि से पीड़ित किसानों को वित्तीय सहायता प्रदान करने वाली फसल बीमा योजना।"
+      },
+      "eligibility": {
+        "ageMin": 18,
+        "state": ["all"]
+      },
+      "benefits": {
+        "en": "Insurance coverage for crop loss at minimal premium (1.5-5% of sum insured)",
+        "hi": "न्यूनतम प्रीमियम (बीमित राशि का 1.5-5%) पर फसल हानि के लिए बीमा कवरेज"
+      },
+      "applicationProcess": {
+        "en": "Apply through bank or CSC within crop season enrollment period.",
+        "hi": "फसल सीजन नामांकन अवधि के भीतर बैंक या CSC के माध्यम से आवेदन करें।"
+      }
+    },
+    {
+      "schemeId": "PM-KAUSHAL-VIKAS",
+      "name": {
+        "en": "PM Kaushal Vikas Yojana (Skill Development)",
+        "hi": "पीएम कौशल विकास योजना (कौशल विकास)"
+      },
+      "description": {
+        "en": "Free skill development training to youth for improving employability in various sectors.",
+        "hi": "विभिन्न क्षेत्रों में रोजगार योग्यता में सुधार के लिए युवाओं को मुफ्त कौशल विकास प्रशिक्षण।"
+      },
+      "eligibility": {
+        "ageMin": 15,
+        "ageMax": 45,
+        "state": ["all"]
+      },
+      "benefits": {
+        "en": "Free skill training, certification, and placement assistance",
+        "hi": "मुफ्त कौशल प्रशिक्षण, प्रमाणन और प्लेसमेंट सहायता"
+      },
+      "applicationProcess": {
+        "en": "Register on PMKVY portal or visit nearest training center with Aadhaar.",
+        "hi": "PMKVY पोर्टल पर पंजीकरण करें या आधार के साथ निकटतम प्रशिक्षण केंद्र पर जाएं।"
+      }
+    },
+    {
+      "schemeId": "DEEN-DAYAL-UPADHYAYA",
+      "name": {
+        "en": "DDU Grameen Kaushalya Yojana (Rural Skills)",
+        "hi": "दीन दयाल उपाध्याय ग्रामीण कौशल्य योजना (ग्रामीण कौशल)"
+      },
+      "description": {
+        "en": "Skill development specifically for rural youth from poor families with placement-linked training.",
+        "hi": "गरीब परिवारों के ग्रामीण युवाओं के लिए प्लेसमेंट-लिंक्ड प्रशिक्षण के साथ विशेष कौशल विकास।"
+      },
+      "eligibility": {
+        "ageMin": 15,
+        "ageMax": 35,
+        "incomeMax": 200000,
+        "state": ["all"]
+      },
+      "benefits": {
+        "en": "Free training, boarding, lodging, uniform, and guaranteed placement",
+        "hi": "मुफ्त प्रशिक्षण, भोजन, आवास, वर्दी और गारंटीकृत प्लेसमेंट"
+      },
+      "applicationProcess": {
+        "en": "Apply through District Rural Development Agency or Block office.",
+        "hi": "जिला ग्रामीण विकास एजेंसी या ब्लॉक कार्यालय के माध्यम से आवेदन करें।"
+      }
+    },
+    {
+      "schemeId": "NATIONAL-SCHOLARSHIP",
+      "name": {
+        "en": "National Scholarship Portal (Education)",
+        "hi": "राष्ट्रीय छात्रवृत्ति पोर्टल (शिक्षा)"
+      },
+      "description": {
+        "en": "Centralized portal for various scholarships including pre-matric, post-matric, and merit-based scholarships.",
+        "hi": "प्री-मैट्रिक, पोस्ट-मैट्रिक और मेरिट-आधारित छात्रवृत्तियों सहित विभिन्न छात्रवृत्तियों के लिए केंद्रीकृत पोर्टल।"
+      },
+      "eligibility": {
+        "ageMin": 6,
+        "ageMax": 30,
+        "incomeMax": 250000,
+        "caste": ["sc", "st", "obc"],
+        "state": ["all"]
+      },
+      "benefits": {
+        "en": "Scholarship amounts vary: ₹1000-25000 per year based on level and category",
+        "hi": "छात्रवृत्ति राशि भिन्न: स्तर और श्रेणी के आधार पर ₹1000-25000 प्रति वर्ष"
+      },
+      "applicationProcess": {
+        "en": "Apply online at scholarships.gov.in with institution verification.",
+        "hi": "संस्थान सत्यापन के साथ scholarships.gov.in पर ऑनलाइन आवेदन करें।"
+      }
+    },
+    {
+      "schemeId": "SWACHH-BHARAT-GRAMIN",
+      "name": {
+        "en": "Swachh Bharat Mission Gramin (Rural Sanitation)",
+        "hi": "स्वच्छ भारत मिशन ग्रामीण (ग्रामीण स्वच्छता)"
+      },
+      "description": {
+        "en": "Financial incentive for construction of individual household latrines in rural areas.",
+        "hi": "ग्रामीण क्षेत्रों में व्यक्तिगत घरेलू शौचालयों के निर्माण के लिए वित्तीय प्रोत्साहन।"
+      },
+      "eligibility": {
+        "incomeMax": 300000,
+        "state": ["all"]
+      },
+      "benefits": {
+        "en": "₹12,000 incentive for toilet construction",
+        "hi": "शौचालय निर्माण के लिए ₹12,000 प्रोत्साहन"
+      },
+      "applicationProcess": {
+        "en": "Apply through Gram Panchayat or Block Development Office.",
+        "hi": "ग्राम पंचायत या ब्लॉक विकास कार्यालय के माध्यम से आवेदन करें।"
+      }
+    },
+    {
+      "schemeId": "PM-MATRU-VANDANA",
+      "name": {
+        "en": "PM Matru Vandana Yojana (Maternity Benefit)",
+        "hi": "पीएम मातृ वंदना योजना (मातृत्व लाभ)"
+      },
+      "description": {
+        "en": "Cash incentive of ₹5000 for pregnant and lactating mothers for first living child.",
+        "hi": "पहले जीवित बच्चे के लिए गर्भवती और स्तनपान कराने वाली माताओं को ₹5000 का नकद प्रोत्साहन।"
+      },
+      "eligibility": {
+        "ageMin": 19,
+        "gender": ["female"],
+        "state": ["all"]
+      },
+      "benefits": {
+        "en": "₹5000 in three installments for first live birth",
+        "hi": "पहले जीवित जन्म के लिए तीन किस्तों में ₹5000"
+      },
+      "applicationProcess": {
+        "en": "Register at Anganwadi Centre or health facility with MCP card.",
+        "hi": "MCP कार्ड के साथ आंगनवाड़ी केंद्र या स्वास्थ्य सुविधा में पंजीकरण करें।"
+      }
+    },
+    {
+      "schemeId": "SOIL-HEALTH-CARD",
+      "name": {
+        "en": "Soil Health Card Scheme (Agriculture)",
+        "hi": "मृदा स्वास्थ्य कार्ड योजना (कृषि)"
+      },
+      "description": {
+        "en": "Provides soil health cards to farmers with crop-wise nutrient recommendations to improve productivity.",
+        "hi": "उत्पादकता में सुधार के लिए फसल-वार पोषक तत्व सिफारिशों के साथ किसानों को मृदा स्वास्थ्य कार्ड प्रदान करता है।"
+      },
+      "eligibility": {
+        "ageMin": 18,
+        "state": ["all"]
+      },
+      "benefits": {
+        "en": "Free soil testing and crop-specific fertilizer recommendations every 2 years",
+        "hi": "हर 2 साल में मुफ्त मिट्टी परीक्षण और फसल-विशिष्ट उर्वरक सिफारिशें"
+      },
+      "applicationProcess": {
+        "en": "Contact local agriculture department or visit soilhealth.dac.gov.in.",
+        "hi": "स्थानीय कृषि विभाग से संपर्क करें या soilhealth.dac.gov.in पर जाएं।"
+      }
+    }
+  ]
+}

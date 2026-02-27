@@ -42,3 +42,7 @@ dump.rdb
 .hypothesis/
 services/user-profile/data/
 services/*/data/
+
+# Secrets and credentials - NEVER commit these
+data/keys/
+data/vault/
