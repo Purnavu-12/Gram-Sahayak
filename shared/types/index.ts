@@ -17,5 +17,30 @@ export * from './user-profile';
 
 export * from './accessibility';
 
-// Bedrock integration types
-export * from './bedrock';
+// Bedrock integration types (use named exports to avoid conflicts with existing types)
+export {
+  BedrockConfig,
+  ClaudeConfig,
+  ClaudeResponse,
+  KBFilter,
+  KBResult,
+  KBSchemeResult,
+  SchemeData,
+  IngestionResult,
+  IngestionError,
+  GuardrailsResult,
+  PIIDetection,
+  Assessment,
+  PIIRedactionResult,
+  PIIContext,
+  FallbackOptions,
+  FallbackResult,
+  FallbackMetrics,
+  BedrockMetrics,
+  LatencyStats,
+  BedrockServiceStatus,
+  BedrockHealthStatus,
+  EnhancedUserProfile,
+  ResponseValidation,
+  TTSResult,
+} from './bedrock';
