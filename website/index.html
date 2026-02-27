@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Gram Sahayak — Voice-first AI assistant helping rural India access government welfare schemes in 23 Indian languages." />
-  <meta name="theme-color" content="#1a6b3c" />
+  <meta name="theme-color" content="#0c0e1a" />
   <title>Gram Sahayak — Voice-First AI for Rural India</title>
   <script>
     // Apply saved theme immediately to prevent flash of unstyled content
@@ -12,14 +12,14 @@
       try {
         var t = localStorage.getItem('gram-sahayak-theme');
         if (t) { document.documentElement.setAttribute('data-theme', t); }
-        else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-          document.documentElement.setAttribute('data-theme', 'dark');
-        } else { document.documentElement.setAttribute('data-theme', 'light'); }
+        else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+          document.documentElement.setAttribute('data-theme', 'light');
+        } else { document.documentElement.setAttribute('data-theme', 'dark'); }
         var c = localStorage.getItem('gram-sahayak-contrast');
         if (c) { document.documentElement.setAttribute('data-contrast', c); }
         var s = localStorage.getItem('gram-sahayak-font-scale');
         if (s) { document.documentElement.style.fontSize = (parseFloat(s) * 100) + '%'; }
-      } catch(e) { document.documentElement.setAttribute('data-theme', 'light'); }
+      } catch(e) { document.documentElement.setAttribute('data-theme', 'dark'); }
     })();
   </script>
   <link rel="stylesheet" href="styles.css" />

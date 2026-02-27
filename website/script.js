@@ -32,11 +32,11 @@
     var savedTheme = localStorage.getItem('gram-sahayak-theme');
     if (savedTheme) {
       setTheme(savedTheme);
-    } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      setTheme('dark');
+    } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+      setTheme('light');
     } else {
       // Ensure icon is in sync with the inline <head> script's choice
-      setTheme(document.documentElement.getAttribute('data-theme') || 'light');
+      setTheme(document.documentElement.getAttribute('data-theme') || 'dark');
     }
   } catch (_) {
     // localStorage unavailable
