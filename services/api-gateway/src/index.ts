@@ -15,8 +15,11 @@ app.use(express.json({ limit: '10mb' })); // Increased limit for audio data
 app.use(tracingMiddleware('api-gateway'));
 
 // CORS configuration
+const corsOrigin = process.env.NODE_ENV === 'production'
+  ? process.env.CORS_ORIGIN || false
+  : process.env.CORS_ORIGIN || '*';
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || '*',
+  origin: corsOrigin,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
@@ -91,8 +94,11 @@ app.post('/circuit-breakers/reset', (req, res) => {
 const websitePath = path.join(__dirname, '../../../website');
 app.use(express.static(websitePath));
 
-// SPA fallback: serve index.html for any unmatched GET request (client-side routing)
-app.get('*', (_req, res) => {
+// SPA fallback: serve index.html for unmatched non-API GET requests (client-side routing)
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/api/') || req.path.startsWith('/health') || req.path.startsWith('/circuit-breakers')) {
+    return next();
+  }
   res.sendFile(path.join(websitePath, 'index.html'));
 });
 
