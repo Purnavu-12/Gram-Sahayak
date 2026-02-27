@@ -13,6 +13,12 @@
   "scripts": {
     "test": "jest",
     "test:watch": "jest --watch",
+    "test:perf": "jest performance-tests/ --testTimeout=60000",
+    "test:perf:full": "jest performance-tests/ --testTimeout=720000",
+    "test:perf:memory": "node --expose-gc node_modules/.bin/jest performance-tests/memory-profiling.test.ts",
+    "test:perf:voice": "jest performance-tests/voice-latency.test.ts",
+    "test:perf:load": "jest performance-tests/load-testing.test.ts --testTimeout=720000",
+    "test:perf:db": "jest performance-tests/database-optimization.test.ts",
     "build": "npm run build --workspaces",
     "dev": "docker-compose up",
     "lint": "eslint . --ext .ts,.tsx"

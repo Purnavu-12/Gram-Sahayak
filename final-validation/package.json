@@ -1,0 +1,25 @@
+{
+  "name": "gram-sahayak-final-validation",
+  "version": "1.0.0",
+  "description": "Final system validation for Gram Sahayak deployment",
+  "scripts": {
+    "test:validation": "npm run test:validation:property && npm run test:validation:languages && npm run test:validation:integration && npm run test:validation:offline",
+    "test:validation:property": "FC_NUM_RUNS=100 HYPOTHESIS_MAX_EXAMPLES=100 jest property-tests-validation.test.ts --testTimeout=600000",
+    "test:validation:languages": "jest multi-language-e2e.test.ts --testTimeout=300000",
+    "test:validation:integration": "jest government-integration.test.ts --testTimeout=300000",
+    "test:validation:offline": "jest offline-sync-validation.test.ts --testTimeout=300000",
+    "test:validation:all": "jest --testTimeout=600000",
+    "test:validation:report": "jest --coverage --coverageReporters=html --coverageReporters=text"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "fast-check": "^3.15.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.0",
+    "@types/node": "^20.0.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.0",
+    "typescript": "^5.3.0"
+  }
+}

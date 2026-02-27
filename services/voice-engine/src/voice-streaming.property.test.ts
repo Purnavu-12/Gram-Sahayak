@@ -22,15 +22,14 @@ describe('Voice Streaming Property Tests', () => {
     it('should maintain 95% confidence threshold for clean audio across all supported languages', async () => {
       await fc.assert(
         fc.asyncProperty(
-          // Generate test data: language, audio quality, duration
+          // Generate test data: language, noise level, duration
           fc.record({
             language: fc.constantFrom('hi', 'bn', 'te', 'mr', 'ta', 'gu', 'kn', 'ml', 'pa', 'or'),
-            audioQuality: fc.constantFrom('clean', 'noisy'),
             duration: fc.integer({ min: 100, max: 5000 }), // 100ms to 5s
             amplitude: fc.double({ min: 0.3, max: 0.9, noNaN: true }), // Reasonable speech amplitude
-            noiseLevel: fc.double({ min: 0.0, max: 0.3, noNaN: true }) // Noise level for noisy condition
+            noiseLevel: fc.double({ min: 0.0, max: 0.3, noNaN: true, noDefaultInfinity: true }) // Noise level
           }),
-          async ({ language, audioQuality, duration, amplitude, noiseLevel }) => {
+          async ({ language, duration, amplitude, noiseLevel }) => {
             // Arrange
             const service = new VoiceEngineService();
             const userId = `test-user-${Date.now()}`;
@@ -40,13 +39,13 @@ describe('Voice Streaming Property Tests', () => {
               // Generate audio samples based on duration
               const sampleRate = 16000;
               const samples = Math.floor((duration / 1000) * sampleRate);
-              const audioChunk = generateAudioChunk(samples, amplitude, audioQuality === 'noisy' ? noiseLevel : 0);
+              const audioChunk = generateAudioChunk(samples, amplitude, noiseLevel);
 
               // Act
               const result = await service.processAudioStream(sessionId, audioChunk);
 
               // Assert - Property: Confidence should meet accuracy requirements
-              // Use actual noiseLevel to determine expected confidence, not the label
+              // Use actual noiseLevel to determine expected confidence
               if (noiseLevel < 0.05) {
                 // Clean audio (very low noise) should achieve 95% confidence
                 expect(result.confidence).toBeGreaterThanOrEqual(0.95);
@@ -82,7 +81,7 @@ describe('Voice Streaming Property Tests', () => {
           fc.record({
             language: fc.constantFrom('hi', 'bn', 'te', 'mr', 'ta'),
             chunkSize: fc.integer({ min: 160, max: 16000 }), // 10ms to 1s at 16kHz
-            amplitude: fc.double({ min: 0.3, max: 0.9, noNaN: true })
+            amplitude: fc.double({ min: 0.3, max: 0.9, noNaN: true, noDefaultInfinity: true })
           }),
           async ({ language, chunkSize, amplitude }) => {
             // Arrange
@@ -117,8 +116,8 @@ describe('Voice Streaming Property Tests', () => {
         fc.asyncProperty(
           fc.record({
             language: fc.constantFrom('hi', 'bn', 'te'),
-            noiseLevel: fc.double({ min: 0.0, max: 0.5, noNaN: true }),
-            amplitude: fc.double({ min: 0.4, max: 0.8, noNaN: true })
+            noiseLevel: fc.double({ min: 0.0, max: 0.5, noNaN: true, noDefaultInfinity: true }),
+            amplitude: fc.double({ min: 0.4, max: 0.8, noNaN: true, noDefaultInfinity: true })
           }),
           async ({ language, noiseLevel, amplitude }) => {
             // Arrange
@@ -161,7 +160,7 @@ describe('Voice Streaming Property Tests', () => {
             language: fc.constantFrom('hi', 'bn', 'te', 'mr'),
             numChunks: fc.integer({ min: 3, max: 10 }),
             chunkSize: fc.integer({ min: 800, max: 3200 }), // 50ms to 200ms
-            amplitude: fc.double({ min: 0.3, max: 0.9, noNaN: true })
+            amplitude: fc.double({ min: 0.3, max: 0.9, noNaN: true, noDefaultInfinity: true })
           }),
           async ({ language, numChunks, chunkSize, amplitude }) => {
             // Arrange

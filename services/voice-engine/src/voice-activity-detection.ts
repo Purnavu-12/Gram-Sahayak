@@ -101,7 +101,14 @@ export class VoiceActivityDetector extends EventEmitter {
    * Calculate energy of audio frame
    */
   private calculateEnergy(audioData: ArrayBuffer): number {
-    const samples = new Int16Array(audioData);
+    // Ensure buffer length is even for Int16Array (2 bytes per sample)
+    let buffer = audioData;
+    if (audioData.byteLength % 2 !== 0) {
+      // Truncate odd byte to align for Int16Array
+      buffer = audioData.slice(0, audioData.byteLength - 1);
+    }
+    
+    const samples = new Int16Array(buffer);
     let sum = 0;
 
     for (let i = 0; i < samples.length; i++) {
@@ -278,7 +285,13 @@ export class AdvancedVAD extends VoiceActivityDetector {
    * Calculate zero-crossing rate for additional speech detection
    */
   private calculateZeroCrossingRate(audioData: ArrayBuffer): number {
-    const samples = new Int16Array(audioData);
+    // Ensure buffer length is even for Int16Array (2 bytes per sample)
+    let buffer = audioData;
+    if (audioData.byteLength % 2 !== 0) {
+      buffer = audioData.slice(0, audioData.byteLength - 1);
+    }
+    
+    const samples = new Int16Array(buffer);
     let crossings = 0;
 
     for (let i = 1; i < samples.length; i++) {
@@ -320,7 +333,13 @@ export class AdvancedVAD extends VoiceActivityDetector {
   }
 
   private calculateEnergyLevel(audioData: ArrayBuffer): number {
-    const samples = new Int16Array(audioData);
+    // Ensure buffer length is even for Int16Array (2 bytes per sample)
+    let buffer = audioData;
+    if (audioData.byteLength % 2 !== 0) {
+      buffer = audioData.slice(0, audioData.byteLength - 1);
+    }
+    
+    const samples = new Int16Array(buffer);
     let sum = 0;
 
     for (let i = 0; i < samples.length; i++) {

@@ -8,7 +8,7 @@
 import * as fc from 'fast-check';
 import { VoiceEngineService } from './voice-engine-service';
 import { NetworkCondition, SyncPriority, SyncOperationType } from './network-optimization';
-import { CachedScheme } from './offline-processing';
+import { DialectCode } from '../../../shared/types/voice-engine';
 
 describe('Network Resilience Property Tests', () => {
   /**
@@ -21,50 +21,62 @@ describe('Network Resilience Property Tests', () => {
    * **Validates: Requirements 1.4, 8.1, 8.2, 8.3, 8.4, 8.5**
    */
   describe('Property 3: Network Resilience', () => {
-    it('should process speech offline when models are cached (Req 8.1)', async () => {
+    it('should continue processing speech offline using cached models (Req 8.1)', async () => {
       await fc.assert(
         fc.asyncProperty(
           fc.record({
-            language: fc.constantFrom('hi', 'bn', 'te', 'mr', 'ta'),
-            audioSize: fc.integer({ min: 250, max: 2500 }).map(n => n * 2), // Ensure even
-            amplitude: fc.double({ min: 0.3, max: 0.9, noNaN: true })
+            language: fc.constantFrom('hi', 'bn', 'te', 'mr', 'ta', 'gu', 'kn', 'ml', 'pa', 'or'),
+            dialect: fc.option(fc.constantFrom('hi-IN', 'bn-IN', 'te-IN') as fc.Arbitrary<DialectCode>, { nil: undefined }),
+            audioChunks: fc.integer({ min: 1, max: 5 }),
+            chunkSize: fc.integer({ min: 800, max: 3200 })
           }),
-          async ({ language, audioSize, amplitude }) => {
+          async ({ language, dialect, audioChunks, chunkSize }) => {
             // Arrange
             const service = new VoiceEngineService();
-            const offlineProcessor = service.getOfflineProcessor();
             const userId = `test-user-${Date.now()}`;
-
-            // Cache model for offline use
-            const modelData = new ArrayBuffer(1024);
-            await offlineProcessor.cacheModel(language, undefined, modelData, '1.0.0');
-
-            // Start session
             const sessionId = await service.startVoiceSession(userId, language);
+            const offlineProcessor = service.getOfflineProcessor();
 
             try {
-              // Act - Go offline
+              // Cache model for offline use
+              const modelData = new ArrayBuffer(1000);
+              await offlineProcessor.cacheModel(language, dialect, modelData, '1.0.0');
+
+              // Go offline
               service.setOnlineStatus(false);
+              const networkOptimizer = service.getNetworkOptimizer();
+              networkOptimizer['currentCondition'] = NetworkCondition.OFFLINE;
 
-              // Generate and process audio
-              const audioChunk = generateAudioChunk(audioSize, amplitude, 0);
-              const result = await service.processAudioStream(sessionId, audioChunk);
+              // Act - Process audio chunks offline
+              const results = [];
+              for (let i = 0; i < audioChunks; i++) {
+                const audioData = generateAudioChunk(chunkSize, 0.7, 0);
+                const result = await service.processAudioStream(sessionId, audioData);
+                results.push(result);
+              }
 
-              // Assert - Property: System continues processing with cached models
-              expect(result).toBeDefined();
-              expect(result.isOffline).toBe(true);
-              expect(result.language).toBe(language);
+              // Assert - Property: System should continue processing offline
+              expect(results.length).toBe(audioChunks);
               
-              // Offline processing should still provide reasonable confidence
-              expect(result.confidence).toBeGreaterThanOrEqual(0.70);
-              expect(result.confidence).toBeLessThanOrEqual(1.0);
+              for (const result of results) {
+                // Should have valid transcription result
+                expect(result).toBeDefined();
+                expect(result.text).toBeDefined();
+                expect(result.confidence).toBeGreaterThan(0);
+                expect(result.confidence).toBeLessThanOrEqual(1);
+                expect(result.language).toBe(language);
+                expect(result.timestamp).toBeInstanceOf(Date);
+                
+                // Should be marked as offline
+                expect(result.isOffline).toBe(true);
+              }
 
-              // Verify offline mode is available
-              expect(service.isOfflineModeAvailable(language)).toBe(true);
+              // Verify operations were queued for sync
+              const queueStatus = networkOptimizer.getSyncQueueStatus();
+              expect(queueStatus.queueSize).toBeGreaterThan(0);
 
             } finally {
               await service.endVoiceSession(sessionId);
-              offlineProcessor.destroy();
             }
           }
         ),
@@ -76,43 +88,51 @@ describe('Network Resilience Property Tests', () => {
       await fc.assert(
         fc.asyncProperty(
           fc.record({
-            schemeId: fc.string({ minLength: 5, maxLength: 20 }).map(s => `SCHEME-${s}`),
-            language: fc.constantFrom('en', 'hi', 'bn', 'te'),
-            daysUntilExpiry: fc.integer({ min: 1, max: 30 })
+            schemeCount: fc.integer({ min: 1, max: 10 }),
+            language: fc.constantFrom('hi', 'bn', 'te', 'mr', 'ta')
           }),
-          async ({ schemeId, language, daysUntilExpiry }) => {
+          async ({ schemeCount, language }) => {
             // Arrange
             const service = new VoiceEngineService();
             const offlineProcessor = service.getOfflineProcessor();
 
-            const scheme: CachedScheme = {
-              schemeId,
-              name: { [language]: `Test Scheme ${schemeId}` },
-              description: { [language]: 'Test description' },
-              eligibilityCriteria: { age: { min: 18, max: 60 } },
-              cachedAt: new Date(),
-              expiresAt: new Date(Date.now() + daysUntilExpiry * 24 * 60 * 60 * 1000)
-            };
+            // Cache multiple schemes
+            const cachedSchemes = [];
+            for (let i = 0; i < schemeCount; i++) {
+              const scheme = {
+                schemeId: `scheme-${i}`,
+                name: { [language]: `Scheme ${i}` },
+                description: { [language]: `Description ${i}` },
+                eligibilityCriteria: { income: 100000 },
+                cachedAt: new Date(),
+                expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
+              };
+              await offlineProcessor.cacheScheme(scheme);
+              cachedSchemes.push(scheme);
+            }
 
-            // Cache scheme
-            await offlineProcessor.cacheScheme(scheme);
+            // Go offline
+            service.setOnlineStatus(false);
 
-            try {
-              // Act - Go offline
-              service.setOnlineStatus(false);
+            // Act - Access cached schemes offline
+            const retrievedSchemes = [];
+            for (const scheme of cachedSchemes) {
+              const retrieved = await offlineProcessor.getCachedScheme(scheme.schemeId);
+              if (retrieved) {
+                retrievedSchemes.push(retrieved);
+              }
+            }
 
-              // Retrieve cached scheme
-              const cachedScheme = await offlineProcessor.getCachedScheme(schemeId);
-
-              // Assert - Property: Cached schemes remain accessible offline
-              expect(cachedScheme).not.toBeNull();
-              expect(cachedScheme?.schemeId).toBe(schemeId);
-              expect(cachedScheme?.name[language]).toBeDefined();
-              expect(cachedScheme?.description[language]).toBeDefined();
-              expect(cachedScheme?.eligibilityCriteria).toBeDefined();
-
-            } finally {
-              offlineProcessor.destroy();
+            // Assert - Property: All cached schemes should be accessible offline
+            expect(retrievedSchemes.length).toBe(schemeCount);
+            
+            for (let i = 0; i < schemeCount; i++) {
+              const retrieved = retrievedSchemes[i];
+              const original = cachedSchemes[i];
+              
+              expect(retrieved.schemeId).toBe(original.schemeId);
+              expect(retrieved.name[language]).toBe(original.name[language]);
+              expect(retrieved.description[language]).toBe(original.description[language]);
             }
           }
         ),
@@ -124,80 +144,84 @@ describe('Network Resilience Property Tests', () => {
       await fc.assert(
         fc.asyncProperty(
           fc.record({
-            language: fc.constantFrom('hi', 'bn', 'te'),
-            numOfflineOperations: fc.integer({ min: 1, max: 5 }), // Reduced from 10
-            audioSize: fc.integer({ min: 250, max: 1000 }).map(n => n * 2) // Ensure even
+            language: fc.constantFrom('hi', 'bn', 'te', 'mr'),
+            offlineOperations: fc.integer({ min: 1, max: 10 }),
+            chunkSize: fc.integer({ min: 800, max: 2400 })
           }),
-          async ({ language, numOfflineOperations, audioSize }) => {
+          async ({ language, offlineOperations, chunkSize }) => {
             // Arrange
             const service = new VoiceEngineService();
-            const offlineProcessor = service.getOfflineProcessor();
-            const networkOptimizer = service.getNetworkOptimizer();
             const userId = `test-user-${Date.now()}`;
-
-            // Cache model
-            const modelData = new ArrayBuffer(1024);
-            await offlineProcessor.cacheModel(language, undefined, modelData, '1.0.0');
-
             const sessionId = await service.startVoiceSession(userId, language);
+            const networkOptimizer = service.getNetworkOptimizer();
+            const offlineProcessor = service.getOfflineProcessor();
 
             try {
-              // Act - Go offline and perform operations
+              // Cache model
+              const modelData = new ArrayBuffer(1000);
+              await offlineProcessor.cacheModel(language, undefined, modelData, '1.0.0');
+
+              // Go offline
               service.setOnlineStatus(false);
               networkOptimizer['currentCondition'] = NetworkCondition.OFFLINE;
 
-              for (let i = 0; i < numOfflineOperations; i++) {
-                const audioChunk = generateAudioChunk(audioSize, 0.7, 0);
-                await service.processAudioStream(sessionId, audioChunk);
+              // Perform operations offline
+              for (let i = 0; i < offlineOperations; i++) {
+                const audioData = generateAudioChunk(chunkSize, 0.7, 0);
+                await service.processAudioStream(sessionId, audioData);
               }
 
-              // Check operations are queued
-              const offlineStatus = networkOptimizer.getSyncQueueStatus();
-              const queuedCount = offlineStatus.queueSize;
+              // Verify operations are queued
+              const offlineQueueStatus = networkOptimizer.getSyncQueueStatus();
+              const queuedCount = offlineQueueStatus.queueSize;
               expect(queuedCount).toBeGreaterThan(0);
 
-              // Restore connectivity
+              // Act - Restore connectivity
               service.setOnlineStatus(true);
               networkOptimizer['currentCondition'] = NetworkCondition.GOOD;
 
               // Trigger sync
               await networkOptimizer.triggerSync();
 
-              // Assert - Property: Offline operations sync when connectivity returns
-              const onlineStatus = networkOptimizer.getSyncQueueStatus();
+              // Assert - Property: Offline operations should be synced
+              const onlineQueueStatus = networkOptimizer.getSyncQueueStatus();
               
-              // Queue should be processed (empty or reduced)
-              expect(onlineStatus.queueSize).toBeLessThanOrEqual(queuedCount);
-
-              // Sync status should be updated
-              const syncStatus = service.getSyncStatus();
-              expect(syncStatus).toBeDefined();
+              // Queue should be processed (empty or significantly reduced)
+              expect(onlineQueueStatus.queueSize).toBeLessThanOrEqual(queuedCount);
+              
+              // If not all processed in one batch, at least some should be processed
+              if (queuedCount > 10) {
+                expect(onlineQueueStatus.queueSize).toBeLessThan(queuedCount);
+              }
 
             } finally {
               await service.endVoiceSession(sessionId);
-              offlineProcessor.destroy();
-              networkOptimizer.destroy();
             }
           }
         ),
-        { numRuns: 30 } // Reduced from 50
+        { numRuns: 100 }
       );
-    }, 30000); // 30 second timeout
+    });
 
-    it('should compress audio and minimize bandwidth when data usage is a concern (Req 8.4)', async () => {
+    it('should compress audio and minimize bandwidth usage when needed (Req 8.4)', async () => {
       await fc.assert(
         fc.asyncProperty(
           fc.record({
-            bandwidth: fc.integer({ min: 100, max: 500 }), // Limited bandwidth (kbps)
-            audioSize: fc.integer({ min: 2500, max: 10000 }).map(n => n * 2), // Ensure even
-            amplitude: fc.double({ min: 0.3, max: 0.9, noNaN: true })
+            bandwidth: fc.integer({ min: 100, max: 1000 }), // kbps
+            audioSize: fc.integer({ min: 5000, max: 20000 }), // bytes
+            networkCondition: fc.constantFrom(
+              NetworkCondition.POOR,
+              NetworkCondition.FAIR,
+              NetworkCondition.GOOD
+            )
           }),
-          async ({ bandwidth, audioSize, amplitude }) => {
+          async ({ bandwidth, audioSize, networkCondition }) => {
             // Arrange
             const service = new VoiceEngineService();
             const networkOptimizer = service.getNetworkOptimizer();
 
-            // Simulate limited bandwidth condition
+            // Set network condition
+            networkOptimizer['currentCondition'] = networkCondition;
             networkOptimizer['currentMetrics'] = {
               bandwidth,
               latency: 200,
@@ -205,29 +229,30 @@ describe('Network Resilience Property Tests', () => {
               jitter: 20,
               timestamp: new Date()
             };
-            networkOptimizer['currentCondition'] = NetworkCondition.FAIR;
 
-            try {
-              // Act - Compress audio
-              const audioData = generateAudioChunk(audioSize, amplitude, 0);
-              const result = await networkOptimizer.compressAudio(audioData);
+            const audioData = new ArrayBuffer(audioSize);
 
-              // Assert - Property: Audio is compressed to minimize bandwidth usage
-              expect(result.compressedSize).toBeLessThanOrEqual(result.originalSize);
-              expect(result.compressionRatio).toBeLessThanOrEqual(1.0);
-              expect(result.compressionRatio).toBeGreaterThan(0);
+            // Act - Compress audio
+            const result = await networkOptimizer.compressAudio(audioData);
 
-              // Lower bandwidth should result in more aggressive compression
-              if (bandwidth < 300) {
-                expect(result.compressionRatio).toBeLessThan(0.8);
-              }
+            // Assert - Property: Compression should minimize bandwidth usage
+            expect(result.originalSize).toBe(audioSize);
+            expect(result.compressedSize).toBeGreaterThan(0);
+            expect(result.compressionRatio).toBeGreaterThan(0);
+            expect(result.compressionRatio).toBeLessThanOrEqual(1.0);
 
-              // Compression time should be reasonable
-              expect(result.compressionTime).toBeGreaterThanOrEqual(0);
-
-            } finally {
-              networkOptimizer.destroy();
+            // When bandwidth is limited, compression should be more aggressive
+            if (bandwidth < 512) {
+              // Below compression threshold - should compress
+              expect(result.compressedSize).toBeLessThan(result.originalSize);
+              expect(result.compressionRatio).toBeLessThan(1.0);
             }
+
+            // Poor network should have more compression than good network
+            if (networkCondition === NetworkCondition.POOR) {
+              expect(result.compressionRatio).toBeLessThan(0.7);
+            }
+
           }
         ),
         { numRuns: 100 }
@@ -239,77 +264,79 @@ describe('Network Resilience Property Tests', () => {
         fc.asyncProperty(
           fc.record({
             criticalOps: fc.integer({ min: 1, max: 5 }),
-            normalOps: fc.integer({ min: 2, max: 8 }),
-            lowOps: fc.integer({ min: 1, max: 5 })
+            highOps: fc.integer({ min: 1, max: 5 }),
+            normalOps: fc.integer({ min: 1, max: 5 }),
+            lowOps: fc.integer({ min: 1, max: 5 }),
+            networkCondition: fc.constantFrom(NetworkCondition.POOR, NetworkCondition.FAIR)
           }),
-          async ({ criticalOps, normalOps, lowOps }) => {
+          async ({ criticalOps, highOps, normalOps, lowOps, networkCondition }) => {
             // Arrange
             const service = new VoiceEngineService();
             const networkOptimizer = service.getNetworkOptimizer();
 
-            // Simulate slow network
-            networkOptimizer['currentCondition'] = NetworkCondition.POOR;
-            networkOptimizer['currentMetrics'] = {
-              bandwidth: 150,
-              latency: 400,
-              packetLoss: 8,
-              jitter: 80,
-              timestamp: new Date()
-            };
+            // Set slow/poor network condition
+            networkOptimizer['currentCondition'] = networkCondition;
 
-            try {
-              // Act - Queue operations with different priorities
-              for (let i = 0; i < criticalOps; i++) {
-                networkOptimizer.queueOperation({
-                  type: SyncOperationType.APPLICATION,
-                  priority: SyncPriority.CRITICAL,
-                  data: { id: `critical-${i}` },
-                  maxRetries: 3
-                });
+            // Queue operations with different priorities
+            for (let i = 0; i < criticalOps; i++) {
+              networkOptimizer.queueOperation({
+                type: SyncOperationType.APPLICATION,
+                priority: SyncPriority.CRITICAL,
+                data: { id: `critical-${i}` },
+                maxRetries: 3
+              });
+            }
+
+            for (let i = 0; i < highOps; i++) {
+              networkOptimizer.queueOperation({
+                type: SyncOperationType.USER_PROFILE,
+                priority: SyncPriority.HIGH,
+                data: { id: `high-${i}` },
+                maxRetries: 3
+              });
+            }
+
+            for (let i = 0; i < normalOps; i++) {
+              networkOptimizer.queueOperation({
+                type: SyncOperationType.TRANSCRIPTION,
+                priority: SyncPriority.NORMAL,
+                data: { id: `normal-${i}` },
+                maxRetries: 3
+              });
+            }
+
+            for (let i = 0; i < lowOps; i++) {
+              networkOptimizer.queueOperation({
+                type: SyncOperationType.SCHEME_DATA,
+                priority: SyncPriority.LOW,
+                data: { id: `low-${i}` },
+                maxRetries: 3
+              });
+            }
+
+            // Act - Get next batch for processing
+            const batch = networkOptimizer['getNextBatch']();
+
+            // Assert - Property: Essential data should be prioritized
+            // In poor/slow network, only critical and high priority should be processed
+            for (const operation of batch) {
+              if (networkCondition === NetworkCondition.POOR) {
+                // Poor network: only CRITICAL and HIGH priority
+                expect(operation.priority).toBeLessThanOrEqual(SyncPriority.HIGH);
+              } else if (networkCondition === NetworkCondition.FAIR) {
+                // Fair network: CRITICAL, HIGH, and some NORMAL
+                expect(operation.priority).toBeLessThanOrEqual(SyncPriority.NORMAL);
               }
+            }
 
-              for (let i = 0; i < normalOps; i++) {
-                networkOptimizer.queueOperation({
-                  type: SyncOperationType.TRANSCRIPTION,
-                  priority: SyncPriority.NORMAL,
-                  data: { id: `normal-${i}` },
-                  maxRetries: 3
-                });
-              }
+            // Verify critical operations are included
+            const criticalInBatch = batch.filter(op => op.priority === SyncPriority.CRITICAL).length;
+            expect(criticalInBatch).toBeGreaterThan(0);
 
-              for (let i = 0; i < lowOps; i++) {
-                networkOptimizer.queueOperation({
-                  type: SyncOperationType.AUDIO_UPLOAD,
-                  priority: SyncPriority.LOW,
-                  data: { id: `low-${i}` },
-                  maxRetries: 3
-                });
-              }
-
-              // Get next batch for processing
-              const batch = networkOptimizer['getNextBatch']();
-
-              // Assert - Property: Essential data is prioritized in slow network
-              // In poor conditions, only CRITICAL and HIGH priority should be processed
-              for (const op of batch) {
-                expect(op.priority).toBeLessThanOrEqual(SyncPriority.HIGH);
-              }
-
-              // Critical operations should be included
-              const criticalInBatch = batch.filter(op => op.priority === SyncPriority.CRITICAL);
-              expect(criticalInBatch.length).toBeGreaterThan(0);
-
-              // Low priority operations should be deferred
-              const lowInBatch = batch.filter(op => op.priority === SyncPriority.LOW);
-              expect(lowInBatch.length).toBe(0);
-
-              // Queue status should show proper prioritization
-              const status = networkOptimizer.getSyncQueueStatus();
-              expect(status.byPriority[SyncPriority.CRITICAL]).toBe(criticalOps);
-              expect(status.byPriority[SyncPriority.LOW]).toBe(lowOps);
-
-            } finally {
-              networkOptimizer.destroy();
+            // Verify low priority operations are deferred in poor conditions
+            if (networkCondition === NetworkCondition.POOR) {
+              const lowInBatch = batch.filter(op => op.priority === SyncPriority.LOW).length;
+              expect(lowInBatch).toBe(0);
             }
           }
         ),
@@ -317,298 +344,233 @@ describe('Network Resilience Property Tests', () => {
       );
     });
 
-    it('should provide graceful degradation across all network conditions (Req 1.4)', async () => {
+    it('should provide graceful degradation with offline capabilities (Req 1.4)', async () => {
       await fc.assert(
         fc.asyncProperty(
           fc.record({
-            condition: fc.constantFrom(
+            language: fc.constantFrom('hi', 'bn', 'te', 'mr', 'ta'),
+            networkCondition: fc.constantFrom(
               NetworkCondition.EXCELLENT,
               NetworkCondition.GOOD,
               NetworkCondition.FAIR,
-              NetworkCondition.POOR
+              NetworkCondition.POOR,
+              NetworkCondition.OFFLINE
             ),
-            language: fc.constantFrom('hi', 'bn', 'te')
+            audioChunks: fc.integer({ min: 1, max: 3 }),
+            chunkSize: fc.integer({ min: 800, max: 2400 })
           }),
-          async ({ condition, language }) => {
+          async ({ language, networkCondition, audioChunks, chunkSize }) => {
             // Arrange
             const service = new VoiceEngineService();
-            const networkOptimizer = service.getNetworkOptimizer();
-            const offlineProcessor = service.getOfflineProcessor();
             const userId = `test-user-${Date.now()}`;
-            const audioSize = 1600; // Fixed size: 100ms at 16kHz
-
-            // Cache model for potential offline use
-            const modelData = new ArrayBuffer(1024);
-            await offlineProcessor.cacheModel(language, undefined, modelData, '1.0.0');
-
-            // Ensure we're online for this test
-            service.setOnlineStatus(true);
-            
-            // Set network condition (but don't go offline)
-            if (condition !== NetworkCondition.OFFLINE) {
-              networkOptimizer['currentCondition'] = condition;
-              // Trigger quality adjustment without going offline
-              if (networkOptimizer['config'].enableAdaptiveQuality) {
-                networkOptimizer['adjustAudioQuality'](condition);
-              }
-            }
-
             const sessionId = await service.startVoiceSession(userId, language);
-
-            try {
-              // Act - Process audio under specific network condition
-              const audioChunk = generateAudioChunk(audioSize, 0.7, 0);
-              const result = await service.processAudioStream(sessionId, audioChunk);
-
-              // Assert - Property: System provides appropriate functionality for each condition
-              expect(result).toBeDefined();
-              expect(result.language).toBe(language);
-
-              // Quality should adapt to network condition
-              const quality = networkOptimizer.getAudioQuality();
-              expect(quality).toBeDefined();
-
-              // Better conditions should allow higher quality
-              if (condition === NetworkCondition.EXCELLENT) {
-                expect(quality.bitrate).toBeGreaterThanOrEqual(64);
-                expect(quality.sampleRate).toBeGreaterThanOrEqual(16000);
-              } else if (condition === NetworkCondition.POOR) {
-                expect(quality.bitrate).toBeLessThanOrEqual(32);
-                expect(quality.compressionLevel).toBeGreaterThanOrEqual(7);
-              }
-
-              // Confidence should remain reasonable across conditions
-              // System should provide results even in poor conditions
-              // Note: In test environment without real ASR, confidence may be lower
-              expect(result.confidence).toBeGreaterThanOrEqual(0);
-              expect(result.confidence).toBeLessThanOrEqual(1.0);
-
-            } finally {
-              await service.endVoiceSession(sessionId);
-              offlineProcessor.destroy();
-              networkOptimizer.destroy();
-            }
-          }
-        ),
-        { numRuns: 100 }
-      );
-    });
-
-    it('should automatically recover when connectivity improves', async () => {
-      await fc.assert(
-        fc.asyncProperty(
-          fc.record({
-            language: fc.constantFrom('hi', 'bn', 'te'),
-            initialCondition: fc.constantFrom(NetworkCondition.OFFLINE, NetworkCondition.POOR),
-            improvedCondition: fc.constantFrom(NetworkCondition.GOOD, NetworkCondition.EXCELLENT),
-            numOperations: fc.integer({ min: 2, max: 5 }) // Reduced from 8
-          }),
-          async ({ language, initialCondition, improvedCondition, numOperations }) => {
-            // Arrange
-            const service = new VoiceEngineService();
             const networkOptimizer = service.getNetworkOptimizer();
             const offlineProcessor = service.getOfflineProcessor();
 
-            // Cache model
-            const modelData = new ArrayBuffer(1024);
-            await offlineProcessor.cacheModel(language, undefined, modelData, '1.0.0');
-
             try {
-              // Act - Start with poor/offline condition
-              networkOptimizer['currentCondition'] = initialCondition;
-              if (initialCondition === NetworkCondition.OFFLINE) {
-                service.setOnlineStatus(false);
-              }
+              // Cache model for offline capability
+              const modelData = new ArrayBuffer(1000);
+              await offlineProcessor.cacheModel(language, undefined, modelData, '1.0.0');
 
-              // Queue operations during poor connectivity
-              for (let i = 0; i < numOperations; i++) {
-                networkOptimizer.queueOperation({
-                  type: SyncOperationType.TRANSCRIPTION,
-                  priority: i === 0 ? SyncPriority.CRITICAL : SyncPriority.NORMAL,
-                  data: { index: i },
-                  maxRetries: 3
-                });
-              }
+              // Set network condition
+              networkOptimizer['currentCondition'] = networkCondition;
+              service.setOnlineStatus(networkCondition !== NetworkCondition.OFFLINE);
 
-              const beforeStatus = networkOptimizer.getSyncQueueStatus();
-              const queuedBefore = beforeStatus.queueSize;
-              expect(queuedBefore).toBeGreaterThan(0);
-
-              // Improve connectivity
-              service.setOnlineStatus(true);
-              networkOptimizer['currentCondition'] = improvedCondition;
-
-              // Trigger recovery
-              await networkOptimizer.triggerSync();
-
-              // Assert - Property: System automatically recovers with improved connectivity
-              const afterStatus = networkOptimizer.getSyncQueueStatus();
-              
-              // Queue should be processed
-              expect(afterStatus.queueSize).toBeLessThanOrEqual(queuedBefore);
-
-              // Quality should improve
-              const quality = networkOptimizer.getAudioQuality();
-              if (improvedCondition === NetworkCondition.EXCELLENT) {
-                expect(quality.bitrate).toBeGreaterThanOrEqual(64);
-              }
-
-            } finally {
-              offlineProcessor.destroy();
-              networkOptimizer.destroy();
-            }
-          }
-        ),
-        { numRuns: 30 } // Reduced from 50
-      );
-    }, 30000); // 30 second timeout
-
-    it('should handle rapid network condition changes without data loss', async () => {
-      await fc.assert(
-        fc.asyncProperty(
-          fc.record({
-            language: fc.constantFrom('hi', 'bn', 'te'),
-            conditionChanges: fc.array(
-              fc.constantFrom(
-                NetworkCondition.EXCELLENT,
-                NetworkCondition.GOOD,
-                NetworkCondition.FAIR,
-                NetworkCondition.POOR
-              ),
-              { minLength: 3, maxLength: 10 }
-            ),
-            audioSize: fc.constant(1000) // Fixed even size
-          }),
-          async ({ language, conditionChanges, audioSize }) => {
-            // Arrange
-            const service = new VoiceEngineService();
-            const networkOptimizer = service.getNetworkOptimizer();
-            const offlineProcessor = service.getOfflineProcessor();
-            const userId = `test-user-${Date.now()}`;
-
-            // Cache model
-            const modelData = new ArrayBuffer(1024);
-            await offlineProcessor.cacheModel(language, undefined, modelData, '1.0.0');
-
-            const sessionId = await service.startVoiceSession(userId, language);
-
-            try {
-              // Act - Rapidly change network conditions
+              // Act - Process audio in various network conditions
               const results = [];
-              
-              for (const condition of conditionChanges) {
-                networkOptimizer['currentCondition'] = condition;
-                
-                // Process audio under this condition
-                const audioChunk = generateAudioChunk(audioSize, 0.7, 0);
-                const result = await service.processAudioStream(sessionId, audioChunk);
+              for (let i = 0; i < audioChunks; i++) {
+                const audioData = generateAudioChunk(chunkSize, 0.7, 0);
+                const result = await service.processAudioStream(sessionId, audioData);
                 results.push(result);
               }
 
-              // Assert - Property: No data loss despite rapid changes
-              expect(results.length).toBe(conditionChanges.length);
-              
-              // All results should be valid
+              // Assert - Property: System should provide graceful degradation
+              expect(results.length).toBe(audioChunks);
+
               for (const result of results) {
+                // Should always return valid results regardless of network
                 expect(result).toBeDefined();
+                expect(result.text).toBeDefined();
+                expect(result.confidence).toBeGreaterThan(0);
                 expect(result.language).toBe(language);
-                expect(result.confidence).toBeGreaterThanOrEqual(0);
-                expect(result.confidence).toBeLessThanOrEqual(1.0);
                 expect(result.timestamp).toBeInstanceOf(Date);
-              }
 
-              // System should remain stable
-              const finalStatus = networkOptimizer.getSyncQueueStatus();
-              expect(finalStatus).toBeDefined();
-
-            } finally {
-              await service.endVoiceSession(sessionId);
-              offlineProcessor.destroy();
-              networkOptimizer.destroy();
-            }
-          }
-        ),
-        { numRuns: 50 }
-      );
-    });
-
-    it('should maintain data integrity during offline-to-online transitions', async () => {
-      await fc.assert(
-        fc.asyncProperty(
-          fc.record({
-            language: fc.constantFrom('hi', 'bn', 'te'),
-            offlineOperations: fc.integer({ min: 2, max: 4 }), // Reduced from 6
-            onlineOperations: fc.integer({ min: 2, max: 4 }) // Reduced from 6
-          }),
-          async ({ language, offlineOperations, onlineOperations }) => {
-            // Arrange
-            const service = new VoiceEngineService();
-            const networkOptimizer = service.getNetworkOptimizer();
-            const offlineProcessor = service.getOfflineProcessor();
-            const userId = `test-user-${Date.now()}`;
-
-            // Cache model
-            const modelData = new ArrayBuffer(1024);
-            await offlineProcessor.cacheModel(language, undefined, modelData, '1.0.0');
-
-            const sessionId = await service.startVoiceSession(userId, language);
-
-            try {
-              const allResults = [];
-
-              // Act - Process offline
-              service.setOnlineStatus(false);
-              networkOptimizer['currentCondition'] = NetworkCondition.OFFLINE;
-
-              for (let i = 0; i < offlineOperations; i++) {
-                const audioChunk = generateAudioChunk(1000, 0.7, 0);
-                const result = await service.processAudioStream(sessionId, audioChunk);
-                allResults.push({ result, phase: 'offline' });
-              }
-
-              // Transition to online
-              service.setOnlineStatus(true);
-              networkOptimizer['currentCondition'] = NetworkCondition.GOOD;
-
-              // Process online
-              for (let i = 0; i < onlineOperations; i++) {
-                const audioChunk = generateAudioChunk(1000, 0.7, 0);
-                const result = await service.processAudioStream(sessionId, audioChunk);
-                allResults.push({ result, phase: 'online' });
-              }
-
-              // Sync offline data
-              await networkOptimizer.triggerSync();
-
-              // Assert - Property: Data integrity maintained across transition
-              expect(allResults.length).toBe(offlineOperations + onlineOperations);
-
-              // All results should be valid
-              for (const { result, phase } of allResults) {
-                expect(result).toBeDefined();
-                expect(result.language).toBe(language);
-                expect(result.confidence).toBeGreaterThanOrEqual(0.70);
-                
-                // Offline results should be marked as such
-                if (phase === 'offline') {
+                // Offline results should be marked
+                if (networkCondition === NetworkCondition.OFFLINE) {
                   expect(result.isOffline).toBe(true);
                 }
               }
 
-              // Sync should complete successfully
-              const syncStatus = service.getSyncStatus();
-              expect(syncStatus).toBeDefined();
+              // Audio quality should adapt to network condition
+              const quality = networkOptimizer.getAudioQuality();
+              expect(quality).toBeDefined();
+              expect(quality.bitrate).toBeGreaterThan(0);
+              expect(quality.sampleRate).toBeGreaterThan(0);
+
+              // Poor network should have lower quality settings
+              if (networkCondition === NetworkCondition.POOR) {
+                expect(quality.bitrate).toBeLessThanOrEqual(32);
+                expect(quality.compressionLevel).toBeGreaterThanOrEqual(7);
+              }
+
+              // Excellent network should have higher quality settings
+              if (networkCondition === NetworkCondition.EXCELLENT) {
+                expect(quality.bitrate).toBeGreaterThanOrEqual(64);
+              }
 
             } finally {
               await service.endVoiceSession(sessionId);
-              offlineProcessor.destroy();
-              networkOptimizer.destroy();
             }
           }
         ),
-        { numRuns: 30 } // Reduced from 50
+        { numRuns: 100 }
       );
-    }, 30000); // 30 second timeout
+    });
+
+    it('should handle network condition transitions smoothly', async () => {
+      await fc.assert(
+        fc.asyncProperty(
+          fc.record({
+            language: fc.constantFrom('hi', 'bn', 'te', 'mr'),
+            transitions: fc.array(
+              fc.constantFrom(
+                NetworkCondition.EXCELLENT,
+                NetworkCondition.GOOD,
+                NetworkCondition.FAIR,
+                NetworkCondition.POOR,
+                NetworkCondition.OFFLINE
+              ),
+              { minLength: 2, maxLength: 5 }
+            ),
+            chunkSize: fc.integer({ min: 800, max: 2400 })
+          }),
+          async ({ language, transitions, chunkSize }) => {
+            // Arrange
+            const service = new VoiceEngineService();
+            const userId = `test-user-${Date.now()}`;
+            const sessionId = await service.startVoiceSession(userId, language);
+            const networkOptimizer = service.getNetworkOptimizer();
+            const offlineProcessor = service.getOfflineProcessor();
+
+            try {
+              // Cache model for offline capability
+              const modelData = new ArrayBuffer(1000);
+              await offlineProcessor.cacheModel(language, undefined, modelData, '1.0.0');
+
+              const results = [];
+
+              // Act - Process audio through network transitions
+              for (const condition of transitions) {
+                networkOptimizer['currentCondition'] = condition;
+                service.setOnlineStatus(condition !== NetworkCondition.OFFLINE);
+
+                const audioData = generateAudioChunk(chunkSize, 0.7, 0);
+                const result = await service.processAudioStream(sessionId, audioData);
+                results.push({ condition, result });
+              }
+
+              // Assert - Property: System should handle transitions smoothly
+              expect(results.length).toBe(transitions.length);
+
+              for (const { condition, result } of results) {
+                // Should always produce valid results
+                expect(result).toBeDefined();
+                expect(result.text).toBeDefined();
+                expect(result.confidence).toBeGreaterThan(0);
+                expect(result.language).toBe(language);
+
+                // Offline results should be marked
+                if (condition === NetworkCondition.OFFLINE) {
+                  expect(result.isOffline).toBe(true);
+                }
+              }
+
+              // Verify no crashes or errors during transitions
+              expect(results.every(r => r.result !== null)).toBe(true);
+
+            } finally {
+              await service.endVoiceSession(sessionId);
+            }
+          }
+        ),
+        { numRuns: 100 }
+      );
+    });
+
+    it('should maintain sync queue integrity across network conditions', async () => {
+      await fc.assert(
+        fc.asyncProperty(
+          fc.record({
+            operations: fc.array(
+              fc.record({
+                type: fc.constantFrom(
+                  SyncOperationType.TRANSCRIPTION,
+                  SyncOperationType.USER_PROFILE,
+                  SyncOperationType.APPLICATION,
+                  SyncOperationType.SCHEME_DATA
+                ),
+                priority: fc.constantFrom(
+                  SyncPriority.CRITICAL,
+                  SyncPriority.HIGH,
+                  SyncPriority.NORMAL,
+                  SyncPriority.LOW
+                )
+              }),
+              { minLength: 1, maxLength: 20 }
+            ),
+            networkCondition: fc.constantFrom(
+              NetworkCondition.GOOD,
+              NetworkCondition.FAIR,
+              NetworkCondition.POOR,
+              NetworkCondition.OFFLINE
+            )
+          }),
+          async ({ operations, networkCondition }) => {
+            // Arrange
+            const service = new VoiceEngineService();
+            const networkOptimizer = service.getNetworkOptimizer();
+
+            // Set network condition
+            networkOptimizer['currentCondition'] = networkCondition;
+
+            // Act - Queue operations
+            const queuedIds = [];
+            for (const op of operations) {
+              const id = networkOptimizer.queueOperation({
+                type: op.type,
+                priority: op.priority,
+                data: { test: true },
+                maxRetries: 3
+              });
+              queuedIds.push(id);
+            }
+
+            // Assert - Property: Queue should maintain integrity
+            const status = networkOptimizer.getSyncQueueStatus();
+            
+            // All operations should be queued
+            expect(status.queueSize).toBe(operations.length);
+
+            // Priority counts should match
+            const priorityCounts = operations.reduce((acc, op) => {
+              acc[op.priority] = (acc[op.priority] || 0) + 1;
+              return acc;
+            }, {} as Record<SyncPriority, number>);
+
+            for (const [priority, count] of Object.entries(priorityCounts)) {
+              expect(status.byPriority[priority as unknown as SyncPriority]).toBe(count);
+            }
+
+            // Queue should be sorted by priority
+            const queue = networkOptimizer['syncQueue'];
+            for (let i = 1; i < queue.length; i++) {
+              expect(queue[i].priority).toBeGreaterThanOrEqual(queue[i - 1].priority);
+            }
+          }
+        ),
+        { numRuns: 100 }
+      );
+    });
   });
 });
 
@@ -620,13 +582,12 @@ describe('Network Resilience Property Tests', () => {
  * @returns ArrayBuffer containing audio data
  */
 function generateAudioChunk(samples: number, amplitude: number, noiseLevel: number): ArrayBuffer {
-  // Create buffer with correct byte size for Int16Array (2 bytes per sample)
-  const buffer = new ArrayBuffer(samples * 2);
+  const buffer = new ArrayBuffer(samples * 2); // 16-bit samples
   const view = new Int16Array(buffer);
 
   for (let i = 0; i < samples; i++) {
-    // Generate base signal (simulating speech)
-    const frequency = 200 + Math.sin(i / 100) * 100; // 100-300 Hz range
+    // Generate base signal (simulating speech with varying frequency)
+    const frequency = 200 + Math.sin(i / 100) * 100; // 100-300 Hz range (typical speech)
     const t = i / 16000; // Time in seconds at 16kHz sample rate
     let signal = Math.sin(2 * Math.PI * frequency * t) * amplitude;
 

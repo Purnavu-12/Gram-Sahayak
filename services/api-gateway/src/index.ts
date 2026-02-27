@@ -3,11 +3,14 @@ import rateLimit from 'express-rate-limit';
 import { authMiddleware } from './middleware/auth';
 import { createProxyRouter, getCircuitBreakerRegistry } from './routes/proxy';
 import { HealthMonitor } from './services/health-monitor';
+import conversationRouter from './routes/conversation';
+import { tracingMiddleware } from './services/distributed-tracing';
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-app.use(express.json());
+app.use(express.json({ limit: '10mb' })); // Increased limit for audio data
+app.use(tracingMiddleware('api-gateway'));
 
 // Initialize health monitor
 const healthMonitor = new HealthMonitor();
@@ -23,6 +26,9 @@ app.use('/api/', limiter);
 
 // Authentication middleware
 app.use('/api/', authMiddleware);
+
+// Conversation orchestration routes (end-to-end flow)
+app.use('/api/conversation', conversationRouter);
 
 // Proxy routes to microservices
 app.use('/api/voice', createProxyRouter('http://voice-engine:3001'));

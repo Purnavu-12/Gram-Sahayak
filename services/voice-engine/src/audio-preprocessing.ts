@@ -91,7 +91,13 @@ export class AudioPreprocessor extends EventEmitter {
    * Convert Int16Array to Float32Array for processing
    */
   private convertToFloat32(audioData: ArrayBuffer): Float32Array {
-    const int16Array = new Int16Array(audioData);
+    // Ensure buffer length is even for Int16Array (2 bytes per sample)
+    let buffer = audioData;
+    if (audioData.byteLength % 2 !== 0) {
+      buffer = audioData.slice(0, audioData.byteLength - 1);
+    }
+    
+    const int16Array = new Int16Array(buffer);
     const float32Array = new Float32Array(int16Array.length);
 
     for (let i = 0; i < int16Array.length; i++) {

@@ -1,0 +1,48 @@
+{
+  "name": "@gram-sahayak/security-tests",
+  "version": "1.0.0",
+  "description": "Security testing and compliance validation suite for Gram Sahayak",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest",
+    "test:security": "jest security-compliance.test.ts",
+    "test:auth": "jest auth-authorization.test.ts",
+    "test:all": "jest --coverage",
+    "test:watch": "jest --watch",
+    "test:ci": "jest --ci --coverage --maxWorkers=2"
+  },
+  "keywords": [
+    "security",
+    "testing",
+    "compliance",
+    "gdpr",
+    "data-protection"
+  ],
+  "author": "Gram Sahayak Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@jest/globals": "^29.7.0",
+    "@types/jest": "^29.5.11",
+    "@types/node": "^20.10.6",
+    "axios": "^1.6.5",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.1",
+    "typescript": "^5.3.3"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "testMatch": [
+      "**/*.test.ts"
+    ],
+    "collectCoverageFrom": [
+      "**/*.test.ts"
+    ],
+    "coverageDirectory": "coverage",
+    "coverageReporters": [
+      "text",
+      "lcov",
+      "html"
+    ]
+  }
+}
