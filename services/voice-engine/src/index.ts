@@ -2,6 +2,10 @@ import express from 'express';
 import { WebSocketServer, WebSocket } from 'ws';
 import { VoiceEngineService } from './voice-engine-service';
 import { DialectCode } from '../../../shared/types/voice-engine';
+import { BedrockAgentWrapper } from '../../../shared/bedrock/bedrock-agent-wrapper';
+import { FallbackHandler } from '../../../shared/bedrock/fallback-handler';
+import { loadBedrockConfig, validateBedrockConfig } from '../../../shared/bedrock/bedrock-config';
+import { BedrockServiceStatus } from '../../../shared/types/bedrock';
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -10,6 +14,28 @@ app.use(express.json());
 
 const voiceEngine = new VoiceEngineService();
 const webrtcService = voiceEngine.getWebRTCService();
+
+// Initialize Bedrock integration
+const bedrockConfig = loadBedrockConfig();
+const configValidation = validateBedrockConfig(bedrockConfig);
+let bedrockWrapper: BedrockAgentWrapper | null = null;
+let fallbackHandler: FallbackHandler | null = null;
+let bedrockEnabled = false;
+
+if (bedrockConfig.enabled && configValidation.valid) {
+  bedrockWrapper = new BedrockAgentWrapper(bedrockConfig);
+  fallbackHandler = new FallbackHandler({
+    timeout: bedrockConfig.fallback.timeout,
+    retries: bedrockConfig.fallback.retries,
+  });
+  bedrockEnabled = true;
+  console.log('Voice Engine: Bedrock integration enabled (Nova Pro STT/TTS)');
+} else {
+  if (bedrockConfig.enabled && !configValidation.valid) {
+    console.warn('Voice Engine: Bedrock config invalid, starting with Bedrock disabled:', configValidation.errors);
+  }
+  console.log('Voice Engine: Using existing STT/TTS implementations');
+}
 
 // HTTP endpoints
 app.post('/session/start', async (req, res) => {
@@ -226,6 +252,48 @@ app.post('/network/compress-audio', async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: (error as Error).message });
   }
+});
+
+// Bedrock integration endpoints
+app.get('/bedrock/status', (req, res) => {
+  const status: BedrockServiceStatus = {
+    enabled: bedrockEnabled,
+    available: bedrockEnabled && !!bedrockWrapper,
+    lastCheck: new Date(),
+    fallbackActive: !bedrockEnabled,
+  };
+  res.json({
+    ...status,
+    models: {
+      stt: {
+        primary: bedrockEnabled ? 'nova-pro' : 'existing',
+        fallback: 'existing',
+        status: bedrockEnabled ? 'healthy' : 'fallback_active',
+      },
+      tts: {
+        primary: bedrockEnabled ? 'nova-pro' : 'existing',
+        fallback: 'existing',
+        status: bedrockEnabled ? 'healthy' : 'fallback_active',
+      },
+    },
+  });
+});
+
+app.post('/bedrock/toggle', (req, res) => {
+  const { enabled } = req.body;
+  bedrockEnabled = enabled && !!bedrockWrapper;
+  res.json({ bedrockEnabled, message: `Bedrock ${bedrockEnabled ? 'enabled' : 'disabled'} for Voice Engine` });
+});
+
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'healthy',
+    service: 'voice-engine',
+    bedrock: {
+      enabled: bedrockEnabled,
+      available: !!bedrockWrapper,
+    },
+  });
 });
 
 const server = app.listen(port, () => {

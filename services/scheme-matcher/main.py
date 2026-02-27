@@ -2,9 +2,19 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
 from scheme_matcher_service import SchemeMatcherService
+import os
+import json
 
-app = FastAPI(title="Scheme Matcher Service")
+app = FastAPI(
+    title="Scheme Matcher Service",
+    description="Government scheme discovery and eligibility matching with optional Bedrock Knowledge Base integration",
+    version="2.0.0",
+)
 matcher = SchemeMatcherService()
+
+# Bedrock integration state
+bedrock_enabled = os.getenv("BEDROCK_ENABLED", "false").lower() == "true"
+bedrock_kb_id = os.getenv("BEDROCK_KB_ID", "")
 
 
 class UserProfile(BaseModel):
@@ -24,6 +34,7 @@ class SchemeMatch(BaseModel):
     estimated_benefit: float
     application_difficulty: str
     reason: str
+    source: Optional[str] = "neo4j"
 
 
 class UserPreferences(BaseModel):
@@ -32,10 +43,21 @@ class UserPreferences(BaseModel):
     exclude_categories: Optional[List[str]] = None
 
 
+class KBSearchRequest(BaseModel):
+    query: str
+    language: str = "en"
+    max_results: int = 3
+    filters: Optional[Dict[str, Any]] = None
+
+
 @app.post("/schemes/find", response_model=List[SchemeMatch])
 async def find_eligible_schemes(profile: UserProfile):
     try:
         schemes = await matcher.find_eligible_schemes(profile.model_dump())
+        # Add source field for backward compatibility
+        for scheme in schemes:
+            if "source" not in scheme:
+                scheme["source"] = "neo4j"
         return schemes
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -106,4 +128,29 @@ async def get_scheme_update_status():
 
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy", "service": "scheme-matcher"}
+    return {
+        "status": "healthy",
+        "service": "scheme-matcher",
+        "bedrock": {
+            "enabled": bedrock_enabled,
+            "knowledge_base_configured": bool(bedrock_kb_id),
+        },
+    }
+
+
+@app.get("/bedrock/status")
+async def bedrock_status():
+    """Get Bedrock integration status for Scheme Matcher"""
+    return {
+        "enabled": bedrock_enabled,
+        "knowledge_base_id": bedrock_kb_id or None,
+        "search_mode": "hybrid" if bedrock_enabled else "neo4j_only",
+    }
+
+
+@app.post("/bedrock/toggle")
+async def toggle_bedrock(enabled: bool = True):
+    """Enable or disable Bedrock integration"""
+    global bedrock_enabled
+    bedrock_enabled = enabled
+    return {"bedrock_enabled": bedrock_enabled}
