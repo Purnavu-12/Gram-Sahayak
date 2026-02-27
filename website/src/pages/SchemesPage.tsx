@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import SpeakButton from '../components/SpeakButton'
 
 const STATES = [
   'Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh','Goa','Gujarat',
@@ -136,9 +137,13 @@ export default function SchemesPage() {
                   <span>💰 {t('schemes.results_benefit')}: ₹{scheme.benefit.toLocaleString()}</span>
                   <span>{t('schemes.results_difficulty')}: {difficultyBadge(scheme.difficulty)}</span>
                 </div>
-                <div style={{ marginTop: '0.75rem', display: 'flex', gap: '0.5rem' }}>
+                <div style={{ marginTop: '0.75rem', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                   <button className="btn btn-green" style={{ padding: '0.4rem 1rem', fontSize: '0.9rem' }}>{t('schemes.results_apply')}</button>
                   <button className="btn btn-outline" style={{ padding: '0.4rem 1rem', fontSize: '0.9rem', color: 'var(--primary)', borderColor: 'var(--primary)' }}>{t('schemes.results_details')}</button>
+                  <SpeakButton
+                    text={`${scheme.name}. ${scheme.reason}. ${t('schemes.results_benefit')}: ${scheme.benefit.toLocaleString()} ${t('schemes.results_difficulty')}: ${t('schemes.results_' + scheme.difficulty)}`}
+                    inline
+                  />
                 </div>
               </div>
             ))

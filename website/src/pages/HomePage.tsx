@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
+import SpeakButton from '../components/SpeakButton'
 
 export default function HomePage() {
   const { t } = useTranslation()
@@ -13,6 +14,9 @@ export default function HomePage() {
         <div className="hero-buttons">
           <Link to="/schemes" className="btn btn-primary">{t('home.cta_find_schemes')}</Link>
           <button className="btn btn-outline">{t('home.cta_voice')}</button>
+        </div>
+        <div className="hero-speak">
+          <SpeakButton text={`${t('home.hero_title')}. ${t('home.hero_subtitle')}`} />
         </div>
       </section>
 

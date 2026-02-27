@@ -336,3 +336,33 @@ a:hover { text-decoration: underline; }
   color: var(--text-muted);
 }
 .empty-state .icon { font-size: 3rem; margin-bottom: 1rem; }
+
+/* ── Speak Button (TTS) ── */
+.speak-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.85rem;
+  border: 1.5px solid var(--primary);
+  border-radius: 999px;
+  background: #e8f5e9;
+  color: var(--primary);
+  cursor: pointer;
+  font-size: 0.88rem;
+  font-weight: 500;
+  transition: background 0.2s, transform 0.15s;
+}
+.speak-btn:hover { background: #c8e6c9; transform: scale(1.03); }
+.speak-btn.speaking { background: var(--primary); color: #fff; border-color: var(--primary); }
+.speak-btn-inline {
+  padding: 0.2rem 0.45rem;
+  font-size: 0.82rem;
+  border-width: 1px;
+}
+.speak-label { font-size: inherit; }
+
+/* Hero speak row */
+.hero-speak { margin-top: 1rem; }
+
+/* Scheme card speak row */
+.scheme-speak { margin-top: 0.5rem; }

@@ -134,7 +134,9 @@
     "yes": "Yes",
     "no": "No",
     "select": "Select",
-    "required": "Required"
+    "required": "Required",
+    "speak": "Listen",
+    "stop_speaking": "Stop"
   },
   "footer": {
     "text": "Gram Sahayak — Empowering Rural India",
