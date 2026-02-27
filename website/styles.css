@@ -60,29 +60,6 @@
   --transition-slow: 500ms ease;
 }
 
-/* --- Dark Theme (explicit attribute — same as default) --- */
-[data-theme="dark"] {
-  --color-primary: #7c6aef;
-  --color-primary-light: #9d8ff5;
-  --color-primary-dark: #5b48d4;
-  --color-primary-bg: rgba(124, 106, 239, 0.12);
-  --color-accent: #22d3ae;
-  --color-accent-light: #5eebc8;
-
-  --color-bg: #0c0e1a;
-  --color-bg-alt: #121526;
-  --color-surface: #181c30;
-  --color-text: #e8eaf0;
-  --color-text-secondary: #a0a5be;
-  --color-text-muted: #636882;
-  --color-border: #282d48;
-
-  --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
-  --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
-  --shadow-lg: 0 8px 30px rgba(0,0,0,0.5);
-  --shadow-xl: 0 20px 60px rgba(0,0,0,0.6);
-}
-
 /* --- Light Theme --- */
 [data-theme="light"] {
   --color-primary: #5b48d4;
