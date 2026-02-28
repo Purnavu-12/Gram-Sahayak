@@ -10,11 +10,11 @@
 2. [Development Timeline — Day One to Today](#2-development-timeline)
 3. [Architecture Deep Dive](#3-architecture-deep-dive)
 4. [Current State Assessment](#4-current-state-assessment)
-5. [Gap Analysis — Plan vs Reality](#5-gap-analysis)
-6. [Deep Research — What Should Be Done](#6-deep-research)
+5. [Gap Analysis — Plan vs Reality](#5-gap-analysis--plan-vs-reality)
+6. [Deep Research — What Should Be Done](#6-deep-research--what-should-be-done)
 7. [What Should Be Changed](#7-what-should-be-changed)
-8. [Prototype-to-Product Roadmap](#8-roadmap)
-9. [Questions for Clarification](#9-questions)
+8. [Prototype-to-Product Roadmap](#8-prototype-to-product-roadmap)
+9. [Questions for Clarification](#9-questions-for-clarification)
 
 ---
 
@@ -164,7 +164,7 @@ Feb 28, 2026 ─── STABILIZATION & INTEGRATION ─────────�
 ### Shared Modules
 | Module | Purpose |
 |--------|---------|
-| `shared/types/` | TypeScript interfaces for all 8 services + Bedrock |
+| `shared/types/` | TypeScript interfaces for accessibility, dialect-detector, form-generator, scheme-matcher, user-profile, voice-engine, plus Bedrock (no shared types yet for API Gateway, Application Tracker, or Document Guide) |
 | `shared/encryption/` | PII protection, key management, TLS config |
 | `shared/bedrock/` | AWS Bedrock wrapper, guardrails, KB pipeline, fallback handler |
 | `shared/performance/` | Cache manager, query optimizer, performance monitor |
@@ -332,9 +332,9 @@ A **comprehensive prototype skeleton** with:
 ### Phase 3: Production Readiness (Priority: LOW for prototype)
 
 #### 3.1 Mobile-First React Frontend
-- **What**: Replace static landing page with React app (the website/ dir has React setup but isn't used)
-- **Note**: The repository has TWO frontends — `website/index.html` (static, in use) and `website/src/` (React, unused)
-- **Action**: Build the React app as the primary frontend with routing, state management, and API integration
+- **What**: Replace the current static landing page in `website/` with a React app
+- **Note**: The repository currently has only a static frontend (`website/index.html`); a new React frontend needs to be created and wired in as the primary UI
+- **Action**: Build a React app as the primary frontend with routing, state management, and API integration, and update build/deploy to serve it instead of the static page
 - **Effort**: 2 weeks
 
 #### 3.2 Real Government Portal Integration
@@ -363,7 +363,7 @@ A **comprehensive prototype skeleton** with:
    - Move to an `examples/` directory or remove entirely
 
 3. **Consolidate Frontend Approach**
-   - Two frontends exist: static HTML (`website/index.html`) and React setup (`website/src/`)
+   - Two frontend approaches are being considered: a static HTML page (for example, `website/index.html`) and a React-based single-page application
    - **Pick one** — recommend React for the actual product, keep static for demo/marketing
 
 4. **Fix Known CI Failures**
@@ -371,9 +371,9 @@ A **comprehensive prototype skeleton** with:
    - Python import path issues
    - Missing numpy in dialect-detector
 
-5. **Remove Sensitive Data from Git**
-   - `data/vault/credentials.json` and `data/keys/keys.json` may still be tracked
-   - Run `git rm -r --cached data/` and ensure `.gitignore` is working
+5. **Ensure No Secrets Are Committed**
+   - Rely on existing CI checks that fail if sensitive directories (such as `data/vault` or `data/keys`) are added
+   - Periodically audit the repository and `.gitignore` to ensure credentials, keys, and other secrets are not tracked
 
 ### Architecture Changes
 
@@ -448,7 +448,7 @@ To refine this plan, I need answers to these questions:
 3. **Real government API access**: Do you have any agreements or API keys for myScheme.gov.in, DigiLocker, or e-Shram? Or should we continue with simulated integrations?
 
 ### Technical Decisions
-4. **Frontend choice**: Should we invest in the React frontend (`website/src/`) or keep improving the static landing page? The React setup exists but isn't being used.
+4. **Frontend choice**: Should we invest in building a React-based frontend or keep improving the static landing page? Currently only the static page exists in the repository.
 5. **Backend directory**: Is the `backend/functions/` (AWS Lambda + DynamoDB) code part of Gram Sahayak, or was it from a different project? It uses a multi-tenant SaaS pattern that doesn't match the microservices.
 6. **AWS Bedrock budget**: Do you have AWS credentials and budget for Bedrock API calls? Claude 3 costs ~$3/M input tokens, ~$15/M output tokens.
 
