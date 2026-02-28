@@ -51,12 +51,16 @@ export class GuardrailsIntegration {
     let redactedText = text;
     let hasMatch = false;
 
+    const enableRedaction = this.config.enablePiiRedaction;
+
     for (const [type, pattern] of Object.entries(PII_PATTERNS)) {
       const matches = text.match(pattern);
       if (matches && matches.length > 0) {
         hasMatch = true;
         detectedTypes.push(type);
-        redactedText = redactedText.replace(pattern, `[${type.toUpperCase()}_REDACTED]`);
+        if (enableRedaction) {
+          redactedText = redactedText.replace(pattern, `[${type.toUpperCase()}_REDACTED]`);
+        }
       }
     }
 

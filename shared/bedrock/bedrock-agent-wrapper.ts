@@ -92,7 +92,7 @@ export class BedrockAgentWrapper {
     const startTime = Date.now();
     const { InvokeModelCommand } = await import('@aws-sdk/client-bedrock-runtime');
 
-    const messages = [{ role: 'user', content: request.prompt }];
+    const messages = [{ role: 'user', content: [{ type: 'text', text: request.prompt }] }];
     const body = JSON.stringify({
       anthropic_version: 'bedrock-2023-05-31',
       max_tokens: request.maxTokens || this.config.maxTokens,

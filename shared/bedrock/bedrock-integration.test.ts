@@ -190,6 +190,15 @@ describe('GuardrailsIntegration', () => {
     expect(result.hasPii).toBe(false);
     expect(result.confidence).toBe(1.0);
   });
+
+  it('should detect but not redact when enablePiiRedaction is false', () => {
+    const detectOnly = new GuardrailsIntegration({ enablePiiRedaction: false });
+    const result = detectOnly.detectAndRedactPii('My Aadhaar is 1234 5678 9012');
+    expect(result.hasPii).toBe(true);
+    expect(result.detectedTypes).toContain('aadhaar');
+    expect(result.redactedText).not.toContain('[AADHAAR_REDACTED]');
+    expect(result.redactedText).toContain('1234 5678 9012');
+  });
 });
 
 describe('KBIngestionPipeline', () => {

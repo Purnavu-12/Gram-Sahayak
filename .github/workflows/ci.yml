@@ -156,7 +156,8 @@ jobs:
         run: |
           # Check for common secret patterns
           if grep -rn "password\s*=\s*['\"][^'\"]*['\"]" --include="*.py" --include="*.ts" --exclude-dir=node_modules --exclude-dir=__pycache__ --exclude="*.test.*" --exclude="*.spec.*" --exclude=".env.example" . | grep -v "test_\|mock\|example\|placeholder\|your-\|dummy\|ENCRYPTION_KEY\|JWT_SECRET"; then
-            echo "WARNING: Potential hardcoded secrets found"
+            echo "ERROR: Potential hardcoded secrets found"
+            exit 1
           else
             echo "No hardcoded secrets detected"
           fi

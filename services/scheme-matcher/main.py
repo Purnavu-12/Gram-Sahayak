@@ -35,7 +35,7 @@ app = FastAPI(
     version="1.0.0",
 )
 
-allowed_origins = os.getenv("ALLOWED_ORIGINS", "*").split(",")
+allowed_origins = [o.strip() for o in os.getenv("ALLOWED_ORIGINS", "*").split(",") if o.strip()]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
@@ -124,7 +124,7 @@ async def suggest_alternative_schemes(scheme_id: str, profile: UserProfile):
     try:
         alternatives = await matcher.suggest_alternative_schemes(
             profile.model_dump(),
-            scheme_id
+            sanitize_string(scheme_id)
         )
         return alternatives
     except Exception as e:

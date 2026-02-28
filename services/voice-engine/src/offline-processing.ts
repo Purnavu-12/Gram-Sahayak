@@ -238,7 +238,7 @@ export class OfflineVoiceProcessor extends EventEmitter {
     let model = await this.loadCachedModel(language, dialect);
 
     // Fallback: try to find any cached model for this language
-    if (!model && !dialect) {
+    if (!model) {
       for (const [modelId, cachedModel] of this.cachedModels) {
         if (modelId === language || modelId.startsWith(`${language}-`)) {
           model = cachedModel;

@@ -55,8 +55,10 @@ export class ResponseValidator {
 
     // Check blocked patterns
     for (const pattern of this.config.blockedPatterns) {
-      if (pattern.test(response)) {
+      pattern.lastIndex = 0;
+      if (pattern.test(sanitizedText)) {
         issues.push(`Response contains blocked pattern: ${pattern.source}`);
+        pattern.lastIndex = 0;
         sanitizedText = sanitizedText.replace(pattern, '[REDACTED]');
       }
     }

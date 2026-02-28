@@ -35,7 +35,7 @@ app = FastAPI(
     version="1.0.0",
 )
 
-allowed_origins = os.getenv("ALLOWED_ORIGINS", "*").split(",")
+allowed_origins = [o.strip() for o in os.getenv("ALLOWED_ORIGINS", "*").split(",") if o.strip()]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
@@ -103,7 +103,7 @@ async def get_scheme_documents_with_alternatives(request: DocumentRequest):
     """
     try:
         result = await guide.get_scheme_documents_with_alternatives(
-            request.scheme_id,
+            sanitize_string(request.scheme_id),
             request.language
         )
         return result

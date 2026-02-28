@@ -13,6 +13,11 @@ export interface MetricEntry {
 
 export class MetricsCollector {
   private metrics: Map<string, MetricEntry[]> = new Map();
+  private maxEntriesPerMetric: number;
+
+  constructor(maxEntriesPerMetric: number = 10000) {
+    this.maxEntriesPerMetric = maxEntriesPerMetric;
+  }
 
   /**
    * Record a metric value.
@@ -25,6 +30,10 @@ export class MetricsCollector {
       labels,
       timestamp: Date.now(),
     });
+    // Evict oldest entries if exceeding max
+    if (entries.length > this.maxEntriesPerMetric) {
+      entries.splice(0, entries.length - this.maxEntriesPerMetric);
+    }
     this.metrics.set(name, entries);
   }
 
@@ -59,7 +68,7 @@ export class MetricsCollector {
     for (const [name, entries] of this.metrics) {
       for (const entry of entries) {
         const labelStr = Object.entries(entry.labels)
-          .map(([k, v]) => `${k}="${v}"`)
+          .map(([k, v]) => `${k}="${String(v).replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n')}"`)
           .join(',');
         lines.push(`${name}{${labelStr}} ${entry.value}`);
       }
