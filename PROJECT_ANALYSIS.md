@@ -100,7 +100,7 @@ Feb 28, 2026 ─── STABILIZATION & INTEGRATION ─────────�
 
 ### Development Velocity
 - **28 days** from first commit to current state
-- **~7 PRs** merged, all via Copilot coding agent
+- **8 PRs** total (7 code PRs + this analysis), all via Copilot coding agent
 - **Most development concentrated in Feb 25-28** (4 days of intense activity)
 - **Rapid prototyping approach** — built all services first, then fixed/stabilized
 
@@ -189,7 +189,7 @@ Feb 28, 2026 ─── STABILIZATION & INTEGRATION ─────────�
 
 1. **Prototype Depth vs Breadth Trade-off**
    - All 9 services exist but many contain mostly test scaffolding and mocked implementations
-   - The Dialect Detector and Scheme Matcher have test files but minimal core logic
+   - The Dialect Detector and Scheme Matcher have substantial in-repo implementations, but most behavior is simulated/mock-driven rather than production-grade logic
    - Voice Engine has sophisticated tests but relies on mocked ASR/TTS (no real IndicWhisper)
 
 2. **No Real External Integrations**
@@ -205,13 +205,13 @@ Feb 28, 2026 ─── STABILIZATION & INTEGRATION ─────────�
 4. **Database Layer is Stub-based**
    - Neo4j queries exist in tests but no real graph database seeded with scheme data
    - Redis is configured in Docker but services use in-memory fallbacks
-   - No persistent storage implementation for user profiles
+   - No database-backed persistence for user profiles; profiles are currently stored as encrypted files on the mounted `/app/data` volume
 
 5. **Known CI Failures** (from TASK_15_ACTION_ITEMS.md)
    - API Gateway conversation orchestrator null reference errors
    - Integration test health monitor caching failures
    - Distributed tracing validation issues
-   - Some Python dependency issues (numpy, import paths)
+   - Some remaining Python test-infra issues (import paths)
 
 6. **Backend Directory Mismatch**
    - `backend/functions/` contains AWS Lambda/DynamoDB code (multi-tenant SaaS)
@@ -223,7 +223,7 @@ Feb 28, 2026 ─── STABILIZATION & INTEGRATION ─────────�
 | Expected (from Specs) | Current Status |
 |----------------------|---------------|
 | Real IndicWhisper ASR model | Mocked — no ML model loaded |
-| Neo4j populated with 700+ schemes | Empty — test fixtures only |
+| Neo4j populated with 700+ schemes | Only a small sample dataset seeded via test fixtures |
 | Government portal API integration | Fully mocked |
 | Offline model caching & sync | Architecture defined, not implemented |
 | AWS Bedrock live integration | Wrapper exists, no live connection |
@@ -262,7 +262,7 @@ A **comprehensive prototype skeleton** with:
 | Architecture | Microservices | Microservices ✅ | On track |
 | Service count | 5 core | 9 services (expanded) ✅ | Exceeded |
 | Voice recognition | Real ASR | Mocked ASR ⚠️ | Behind |
-| Scheme database | 700+ schemes | 0 real schemes ❌ | Behind |
+| Scheme database | 700+ schemes | Only a handful of sample schemes ❌ | Behind |
 | Government APIs | Live integration | Mocked ⚠️ | Behind |
 | Security | Full encryption | Architecture + tests ✅ | On track |
 | Testing | Property-based | Extensive coverage ✅ | Exceeded |
@@ -284,7 +284,9 @@ A **comprehensive prototype skeleton** with:
 - **Sources**: 
   - [myScheme.gov.in](https://www.myscheme.gov.in/) — Central & state scheme database
   - PM-KISAN, MGNREGA, Ujjwala Yojana, PM Awas Yojana, etc.
-- **Action**: Create `data/schemes/` with JSON files containing scheme details, eligibility criteria, required documents, and benefits
+- **Action**:
+  - Create a version-controlled directory (e.g. `seed-data/schemes/`) with JSON files containing scheme details, eligibility criteria, required documents, and benefits (ensure this path is not ignored by `.gitignore`)
+  - Implement the seeding script to load scheme definitions from this directory for reproducible database seeding
 - **Effort**: 2-3 days
 
 #### 1.2 Connect Frontend to Backend
@@ -369,7 +371,7 @@ A **comprehensive prototype skeleton** with:
 4. **Fix Known CI Failures**
    - API Gateway orchestrator null references
    - Python import path issues
-   - Missing numpy in dialect-detector
+   - Import-path and test-structure issues in dialect-detector service
 
 5. **Ensure No Secrets Are Committed**
    - Rely on existing CI checks that fail if sensitive directories (such as `data/vault` or `data/keys`) are added
