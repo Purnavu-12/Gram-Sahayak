@@ -2,9 +2,53 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
 from scheme_matcher_service import SchemeMatcherService
+import os
+import logging
+import json
+import re
+from datetime import datetime
+from fastapi.middleware.cors import CORSMiddleware
+
+
+class JSONFormatter(logging.Formatter):
+    def format(self, record):
+        log_entry = {
+            "timestamp": datetime.utcnow().isoformat(),
+            "level": record.levelname,
+            "service": "scheme-matcher",
+            "message": record.getMessage(),
+        }
+        if record.exc_info:
+            log_entry["exception"] = self.formatException(record.exc_info)
+        return json.dumps(log_entry)
+
+
+handler = logging.StreamHandler()
+handler.setFormatter(JSONFormatter())
+logger = logging.getLogger(__name__)
+logger.addHandler(handler)
+logger.setLevel(logging.INFO)
 
 app = FastAPI(title="Scheme Matcher Service")
+
+allowed_origins = os.getenv("ALLOWED_ORIGINS", "*").split(",")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=allowed_origins,
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_headers=["*"],
+)
+
 matcher = SchemeMatcherService()
+
+
+def sanitize_string(value: str) -> str:
+    """Remove HTML tags and limit length for input sanitization."""
+    if not value:
+        return value
+    clean = re.sub(r'<[^>]+>', '', value)
+    return clean[:10000]
 
 
 class UserProfile(BaseModel):
@@ -38,7 +82,8 @@ async def find_eligible_schemes(profile: UserProfile):
         schemes = await matcher.find_eligible_schemes(profile.model_dump())
         return schemes
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error in endpoint: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.post("/schemes/{scheme_id}/eligibility")
@@ -47,7 +92,8 @@ async def evaluate_eligibility(scheme_id: str, profile: UserProfile):
         result = await matcher.evaluate_eligibility(scheme_id, profile.model_dump())
         return result
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error in endpoint: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.post("/schemes/rank")
@@ -59,7 +105,8 @@ async def get_priority_ranking(schemes: List[SchemeMatch], preferences: UserPref
         )
         return ranked
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error in endpoint: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.post("/schemes/{scheme_id}/alternatives")
@@ -75,7 +122,8 @@ async def suggest_alternative_schemes(scheme_id: str, profile: UserProfile):
         )
         return alternatives
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error in endpoint: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.post("/schemes/update")
@@ -88,7 +136,8 @@ async def update_scheme_database(updates: List[Dict[str, Any]]):
         await matcher.update_scheme_database(updates)
         return {"status": "success", "updated_count": len(updates)}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error in endpoint: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.get("/schemes/status")
@@ -101,7 +150,8 @@ async def get_scheme_update_status():
         status = matcher.get_scheme_update_status()
         return status
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error in endpoint: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.get("/health")

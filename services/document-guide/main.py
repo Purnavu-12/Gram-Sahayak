@@ -2,9 +2,53 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
 from document_guide_service import DocumentGuideService
+import os
+import logging
+import json
+import re
+from datetime import datetime
+from fastapi.middleware.cors import CORSMiddleware
+
+
+class JSONFormatter(logging.Formatter):
+    def format(self, record):
+        log_entry = {
+            "timestamp": datetime.utcnow().isoformat(),
+            "level": record.levelname,
+            "service": "document-guide",
+            "message": record.getMessage(),
+        }
+        if record.exc_info:
+            log_entry["exception"] = self.formatException(record.exc_info)
+        return json.dumps(log_entry)
+
+
+handler = logging.StreamHandler()
+handler.setFormatter(JSONFormatter())
+logger = logging.getLogger(__name__)
+logger.addHandler(handler)
+logger.setLevel(logging.INFO)
 
 app = FastAPI(title="Document Guide Service")
+
+allowed_origins = os.getenv("ALLOWED_ORIGINS", "*").split(",")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=allowed_origins,
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_headers=["*"],
+)
+
 guide = DocumentGuideService()
+
+
+def sanitize_string(value: str) -> str:
+    """Remove HTML tags and limit length for input sanitization."""
+    if not value:
+        return value
+    clean = re.sub(r'<[^>]+>', '', value)
+    return clean[:10000]
 
 
 class DocumentRequest(BaseModel):
@@ -27,7 +71,8 @@ async def get_scheme_documents(request: DocumentRequest):
         result = await guide.get_scheme_documents(request.scheme_id, request.language)
         return result
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error in endpoint: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.post("/documents/alternatives")
@@ -40,7 +85,8 @@ async def get_document_alternatives(request: AlternativeRequest):
         result = await guide.get_document_alternatives(request.document_id, request.language)
         return result
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error in endpoint: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.post("/documents/scheme/complete")
@@ -56,7 +102,8 @@ async def get_scheme_documents_with_alternatives(request: DocumentRequest):
         )
         return result
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error in endpoint: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.get("/documents/languages")
@@ -66,7 +113,8 @@ async def get_supported_languages():
         languages = guide.get_supported_languages()
         return {"languages": languages}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error in endpoint: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.get("/documents/all")
@@ -76,7 +124,8 @@ async def get_all_documents(language: str = "en"):
         documents = guide.get_all_documents(language)
         return {"documents": documents, "language": language}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error in endpoint: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.get("/health")
@@ -107,7 +156,8 @@ async def get_document_acquisition_guidance(request: GuidanceRequest):
         )
         return result
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error in endpoint: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.post("/documents/template")
@@ -123,7 +173,8 @@ async def get_document_template(request: GuidanceRequest):
         )
         return result
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error in endpoint: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.post("/documents/complete-guidance")
@@ -139,7 +190,8 @@ async def get_complete_document_guidance(request: GuidanceRequest):
         )
         return result
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error in endpoint: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.post("/authorities/contact")
@@ -155,7 +207,8 @@ async def get_authority_contact_info(request: AuthorityRequest):
         )
         return result
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error in endpoint: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.get("/authorities/all")
@@ -165,4 +218,5 @@ async def get_all_authorities(language: str = "en"):
         authorities = guide.get_all_authorities(language)
         return {"authorities": authorities, "language": language}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error in endpoint: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
