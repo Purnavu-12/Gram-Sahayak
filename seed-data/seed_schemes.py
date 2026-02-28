@@ -60,9 +60,13 @@ def transform_to_matcher_format(scheme: Dict[str, Any]) -> Dict[str, Any]:
     if eligibility.get('gender') and eligibility['gender'] != 'all':
         matcher_eligibility['gender'] = [eligibility['gender']]
     if eligibility.get('category'):
-        caste_categories = [c for c in eligibility['category'] if c in ('sc', 'st', 'obc')]
-        if caste_categories and len(caste_categories) < 6:
-            matcher_eligibility['caste'] = caste_categories
+        categories = eligibility['category']
+        if isinstance(categories, str):
+            categories = [categories]
+        caste_values = {'sc', 'st', 'obc'}
+        non_empty = [c for c in categories if c]
+        if non_empty and set(non_empty).issubset(caste_values):
+            matcher_eligibility['caste'] = non_empty
     if eligibility.get('area') and eligibility['area'] != 'both':
         matcher_eligibility['area'] = eligibility['area']
 

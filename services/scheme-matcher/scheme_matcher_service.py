@@ -258,10 +258,16 @@ class SchemeMatcherService:
             matcher_elig['max_age'] = eligibility['age_max']
         if eligibility.get('gender') and eligibility['gender'] != 'all':
             matcher_elig['gender'] = [eligibility['gender']]
-        if eligibility.get('category'):
-            caste_cats = [c for c in eligibility['category'] if c in ('sc', 'st', 'obc')]
-            if caste_cats and len(caste_cats) < 6:
-                matcher_elig['caste'] = caste_cats
+        if eligibility.get('caste'):
+            matcher_elig['caste'] = eligibility['caste']
+        elif eligibility.get('category'):
+            categories = eligibility['category']
+            if isinstance(categories, str):
+                categories = [categories]
+            caste_values = {'sc', 'st', 'obc'}
+            non_empty = [c for c in categories if c]
+            if non_empty and set(non_empty).issubset(caste_values):
+                matcher_elig['caste'] = non_empty
         if eligibility.get('area') and eligibility['area'] != 'both':
             matcher_elig['area'] = eligibility['area']
         

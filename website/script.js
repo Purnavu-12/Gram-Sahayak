@@ -780,11 +780,11 @@
     var html = '<div class="results-header"><h3>Matching Schemes</h3><span class="results-count">' + schemes.length + ' found</span></div>';
     schemes.forEach(function (scheme) {
       var benefits = scheme.benefits || {};
-      var benefitText = benefits.amount || '';
+      var benefitText = benefits.amount || (scheme.estimated_benefit ? '₹' + Number(scheme.estimated_benefit).toLocaleString() : '');
       var docs = scheme.documents_required || [];
-      var name = scheme.name || '';
-      var desc = scheme.description || '';
-      var cat = scheme.category || '';
+      var name = scheme.name || scheme.scheme_id || '';
+      var desc = scheme.description || scheme.reason || '';
+      var cat = scheme.category || scheme.application_difficulty || '';
       html += '<div class="result-card">';
       html += '<div class="result-category">' + escapeHtml(cat) + '</div>';
       html += '<h4>' + escapeHtml(name) + '</h4>';
@@ -802,14 +802,21 @@
     resultsDiv.innerHTML = '<div class="results-loading"><div class="spinner"></div><p>Searching schemes...</p></div>';
 
     // Try API Gateway first, then fall back to local seed data
-    fetch(API_BASE + '/api/schemes/find', {
+    var headers = { 'Content-Type': 'application/json' };
+    try {
+      var token = localStorage.getItem('authToken');
+      if (token) {
+        headers['Authorization'] = 'Bearer ' + token;
+      }
+    } catch (_) {}
+    fetch(API_BASE + '/api/schemes/schemes/find', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: headers,
       body: JSON.stringify({
         user_id: 'demo-user',
-        personal_info: { name: 'User' },
+        personal_info: { name: 'User', age: profile.age, gender: profile.gender },
         demographics: { age: profile.age, gender: profile.gender, caste: profile.socialCategory, location_type: profile.area },
-        economic: { income: profile.income, occupation: profile.occupation },
+        economic: { income: profile.income, annual_income: profile.income, occupation: profile.occupation },
         preferences: {},
         application_history: []
       })
