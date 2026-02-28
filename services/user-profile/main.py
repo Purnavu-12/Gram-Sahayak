@@ -219,7 +219,8 @@ async def voice_update_profile(request: VoiceUpdateRequest):
             raise HTTPException(status_code=404, detail="Profile not found")
         
         # Parse natural language update
-        updates = voice_parser.parse_update(request.naturalLanguageUpdate, profile)
+        sanitized_input = sanitize_string(request.naturalLanguageUpdate)
+        updates = voice_parser.parse_update(sanitized_input, profile)
         
         if not updates:
             return VoiceUpdateResponse(

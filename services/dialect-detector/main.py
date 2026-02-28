@@ -92,7 +92,10 @@ async def detect_dialect(audio_features: AudioFeatures):
 @app.post("/feedback")
 async def update_confidence(session_id: str, feedback: FeedbackData):
     try:
-        await detector.update_confidence(session_id, feedback.model_dump())
+        data = feedback.model_dump()
+        if data.get("comments"):
+            data["comments"] = sanitize_string(data["comments"])
+        await detector.update_confidence(sanitize_string(session_id), data)
         return {"status": "success"}
     except Exception as e:
         logger.error(f"Error in endpoint: {e}", exc_info=True)

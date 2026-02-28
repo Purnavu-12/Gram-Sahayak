@@ -72,7 +72,9 @@ async def get_scheme_documents(request: DocumentRequest):
     Validates: Requirement 5.1
     """
     try:
-        result = await guide.get_scheme_documents(request.scheme_id, request.language)
+        result = await guide.get_scheme_documents(
+            sanitize_string(request.scheme_id), request.language
+        )
         return result
     except Exception as e:
         logger.error(f"Error in endpoint: {e}", exc_info=True)

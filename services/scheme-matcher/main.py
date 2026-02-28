@@ -93,7 +93,9 @@ async def find_eligible_schemes(profile: UserProfile):
 @app.post("/schemes/{scheme_id}/eligibility")
 async def evaluate_eligibility(scheme_id: str, profile: UserProfile):
     try:
-        result = await matcher.evaluate_eligibility(scheme_id, profile.model_dump())
+        result = await matcher.evaluate_eligibility(
+            sanitize_string(scheme_id), profile.model_dump()
+        )
         return result
     except Exception as e:
         logger.error(f"Error in endpoint: {e}", exc_info=True)

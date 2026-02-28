@@ -323,7 +323,7 @@ async def get_timeline(application_id: str):
     Validates: Requirement 6.2 (confirmation numbers and expected timelines)
     """
     try:
-        timeline = await lifecycle_manager.get_timeline(application_id)
+        timeline = await lifecycle_manager.get_timeline(sanitize_string(application_id))
         
         if not timeline:
             raise HTTPException(
