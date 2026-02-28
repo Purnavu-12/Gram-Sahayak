@@ -215,7 +215,7 @@ class GovernmentPortalIntegration:
             self.audit_logger.log_event(
                 event_type=AuditEventType.AUTH_FAILURE,
                 user_id=user_id,
-                portal_id=portal_type.value,
+                portal_id=portal_type.value if isinstance(portal_type, PortalType) else str(portal_type),
                 details={'error': 'unknown_portal_type'},
                 success=False,
                 ip_address=ip_address
