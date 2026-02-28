@@ -252,7 +252,7 @@ export class VoiceEngineService implements VoiceEngine {
     // Create transcription result (placeholder - would integrate with actual ASR)
     const result: TranscriptionResult = {
       text: '',
-      confidence: vadResult.confidence,
+      confidence: Math.max(0.01, vadResult.confidence),
       language: session.preferredLanguage || 'hi',
       timestamp: new Date(),
       isFinal: vadResult.isSpeech && session.vad.getState() === VADState.SPEECH_END,

@@ -5,15 +5,17 @@ import {
 } from '../services/conversation-orchestrator';
 import { ServiceClientFactory } from '../../../../shared/service-client';
 
-// Mock Redis
+// Mock Redis - use singleton so tests can configure it
+const mockRedisClient = {
+  connect: jest.fn(),
+  get: jest.fn(),
+  setEx: jest.fn(),
+  del: jest.fn(),
+  on: jest.fn(),
+};
+
 jest.mock('redis', () => ({
-  createClient: jest.fn(() => ({
-    connect: jest.fn(),
-    get: jest.fn(),
-    setEx: jest.fn(),
-    del: jest.fn(),
-    on: jest.fn(),
-  })),
+  createClient: jest.fn(() => mockRedisClient),
 }));
 
 // Mock service clients
@@ -139,6 +141,19 @@ describe('ConversationOrchestrator', () => {
   });
 
   describe('Profile Collection Flow', () => {
+    const profileCollectionState = JSON.stringify({
+      sessionId: 'session123',
+      userId: 'user123',
+      currentStage: ConversationStage.PROFILE_COLLECTION,
+      conversationHistory: [],
+      metadata: {
+        startTime: new Date().toISOString(),
+        lastActivity: new Date().toISOString(),
+        errorCount: 0,
+        retryCount: 0,
+      },
+    });
+
     it('should load existing user profile', async () => {
       // Arrange
       const input: ConversationInput = {
@@ -153,6 +168,7 @@ describe('ConversationOrchestrator', () => {
         demographics: { state: 'Maharashtra' },
       };
 
+      mockRedisClient.get.mockResolvedValueOnce(profileCollectionState);
       mockProfileClient.get.mockResolvedValue(mockProfile);
 
       // Act
@@ -165,12 +181,26 @@ describe('ConversationOrchestrator', () => {
 
     it('should collect profile information for new users', async () => {
       // Arrange
+      const newUserState = JSON.stringify({
+        sessionId: 'session123',
+        userId: 'newuser',
+        currentStage: ConversationStage.PROFILE_COLLECTION,
+        conversationHistory: [],
+        metadata: {
+          startTime: new Date().toISOString(),
+          lastActivity: new Date().toISOString(),
+          errorCount: 0,
+          retryCount: 0,
+        },
+      });
+
       const input: ConversationInput = {
         sessionId: 'session123',
         userId: 'newuser',
         textInput: 'I am 35 years old',
       };
 
+      mockRedisClient.get.mockResolvedValueOnce(newUserState);
       mockProfileClient.get.mockRejectedValue(new Error('Profile not found'));
       mockVoiceClient.post.mockResolvedValue({ text: 'I am 35 years old' });
 

@@ -167,13 +167,14 @@ export class DistributedTracer {
     parentSpanId?: string;
   } | null {
     try {
+      if (!traceHeader) return null;
       const parts = traceHeader.split(':');
-      if (parts.length < 2) return null;
+      if (parts.length < 2 || !parts[0] || !parts[1]) return null;
 
       return {
         traceId: parts[0],
         spanId: parts[1],
-        parentSpanId: parts[2] !== '0' ? parts[2] : undefined,
+        parentSpanId: parts[2] && parts[2] !== '0' ? parts[2] : undefined,
       };
     } catch (error) {
       return null;
