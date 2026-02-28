@@ -18,7 +18,7 @@ export interface CacheEntry<T> {
 
 export class CacheManager<T> {
   private cache: Map<string, CacheEntry<T>>;
-  private config: CacheConfig;
+  protected config: CacheConfig;
   private currentSize: number;
   private hits: number;
   private misses: number;

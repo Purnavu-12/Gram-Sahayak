@@ -61,7 +61,9 @@ export class BedrockAgentWrapper {
   async initialize(): Promise<void> {
     try {
       // Dynamic import to avoid hard dependency on AWS SDK at module load time
+      // @ts-ignore — AWS SDK is an optional peer dependency, loaded at runtime
       const { BedrockRuntimeClient } = await import('@aws-sdk/client-bedrock-runtime');
+      // @ts-ignore — AWS SDK is an optional peer dependency, loaded at runtime
       const { BedrockAgentRuntimeClient } = await import('@aws-sdk/client-bedrock-agent-runtime');
 
       this.bedrockClient = new BedrockRuntimeClient({
@@ -90,6 +92,7 @@ export class BedrockAgentWrapper {
     }
 
     const startTime = Date.now();
+    // @ts-ignore — AWS SDK is an optional peer dependency, loaded at runtime
     const { InvokeModelCommand } = await import('@aws-sdk/client-bedrock-runtime');
 
     const messages = [{ role: 'user', content: [{ type: 'text', text: request.prompt }] }];
@@ -133,6 +136,7 @@ export class BedrockAgentWrapper {
     }
 
     const startTime = Date.now();
+    // @ts-ignore — AWS SDK is an optional peer dependency, loaded at runtime
     const { RetrieveAndGenerateCommand } = await import('@aws-sdk/client-bedrock-agent-runtime');
 
     const kbId = request.knowledgeBaseId || this.config.knowledgeBaseId;

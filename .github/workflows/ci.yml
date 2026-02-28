@@ -55,7 +55,7 @@ jobs:
       - name: Run tests
         run: |
           cd services/dialect-detector
-          python -m pytest tests/ -v --timeout=120
+          python -m pytest tests/ -v
 
   python-scheme-matcher:
     name: Python Tests - Scheme Matcher
@@ -77,7 +77,7 @@ jobs:
       - name: Run tests
         run: |
           cd services/scheme-matcher
-          python -m pytest tests/ -v --timeout=120
+          python -m pytest tests/ -v
 
   python-document-guide:
     name: Python Tests - Document Guide
@@ -99,7 +99,7 @@ jobs:
       - name: Run tests
         run: |
           cd services/document-guide
-          python -m pytest tests/ -v --timeout=120
+          python -m pytest tests/ -v
 
   python-application-tracker:
     name: Python Tests - Application Tracker
@@ -121,7 +121,7 @@ jobs:
       - name: Run tests
         run: |
           cd services/application-tracker
-          python -m pytest tests/ -v --timeout=120
+          python -m pytest tests/ -v
 
   python-user-profile:
     name: Python Tests - User Profile
@@ -143,7 +143,7 @@ jobs:
       - name: Run tests
         run: |
           cd services/user-profile
-          python -m pytest tests/ -v --timeout=120
+          python -m pytest tests/ -v
 
   security-check:
     name: Security Check
