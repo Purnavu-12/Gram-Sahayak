@@ -45,7 +45,7 @@ describe('Network Resilience Property Tests', () => {
               // Go offline
               service.setOnlineStatus(false);
               const networkOptimizer = service.getNetworkOptimizer();
-              networkOptimizer['currentCondition'] = NetworkCondition.OFFLINE;
+              networkOptimizer.setCondition(NetworkCondition.OFFLINE);
 
               // Act - Process audio chunks offline
               const results = [];
@@ -163,7 +163,7 @@ describe('Network Resilience Property Tests', () => {
 
               // Go offline
               service.setOnlineStatus(false);
-              networkOptimizer['currentCondition'] = NetworkCondition.OFFLINE;
+              networkOptimizer.setCondition(NetworkCondition.OFFLINE);
 
               // Perform operations offline
               for (let i = 0; i < offlineOperations; i++) {
@@ -178,7 +178,7 @@ describe('Network Resilience Property Tests', () => {
 
               // Act - Restore connectivity
               service.setOnlineStatus(true);
-              networkOptimizer['currentCondition'] = NetworkCondition.GOOD;
+              networkOptimizer.setCondition(NetworkCondition.GOOD);
 
               // Trigger sync
               await networkOptimizer.triggerSync();
@@ -221,7 +221,7 @@ describe('Network Resilience Property Tests', () => {
             const networkOptimizer = service.getNetworkOptimizer();
 
             // Set network condition
-            networkOptimizer['currentCondition'] = networkCondition;
+            networkOptimizer.setCondition(networkCondition);
             networkOptimizer['currentMetrics'] = {
               bandwidth,
               latency: 200,
@@ -275,7 +275,7 @@ describe('Network Resilience Property Tests', () => {
             const networkOptimizer = service.getNetworkOptimizer();
 
             // Set slow/poor network condition
-            networkOptimizer['currentCondition'] = networkCondition;
+            networkOptimizer.setCondition(networkCondition);
 
             // Queue operations with different priorities
             for (let i = 0; i < criticalOps; i++) {
@@ -373,7 +373,7 @@ describe('Network Resilience Property Tests', () => {
               await offlineProcessor.cacheModel(language, undefined, modelData, '1.0.0');
 
               // Set network condition
-              networkOptimizer['currentCondition'] = networkCondition;
+              networkOptimizer.setCondition(networkCondition);
               service.setOnlineStatus(networkCondition !== NetworkCondition.OFFLINE);
 
               // Act - Process audio in various network conditions
@@ -461,7 +461,7 @@ describe('Network Resilience Property Tests', () => {
 
               // Act - Process audio through network transitions
               for (const condition of transitions) {
-                networkOptimizer['currentCondition'] = condition;
+                networkOptimizer.setCondition(condition);
                 service.setOnlineStatus(condition !== NetworkCondition.OFFLINE);
 
                 const audioData = generateAudioChunk(chunkSize, 0.7, 0);
@@ -531,7 +531,7 @@ describe('Network Resilience Property Tests', () => {
             const networkOptimizer = service.getNetworkOptimizer();
 
             // Set network condition
-            networkOptimizer['currentCondition'] = networkCondition;
+            networkOptimizer.setCondition(networkCondition);
 
             // Act - Queue operations
             const queuedIds = [];

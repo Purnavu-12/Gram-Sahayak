@@ -48,7 +48,11 @@ logger = logging.getLogger(__name__)
 logger.addHandler(handler)
 logger.setLevel(logging.INFO)
 
-app = FastAPI(title="Application Tracker Service")
+app = FastAPI(
+    title="Application Tracker Service",
+    description="Government portal integration, application submission, and status tracking for Gram Sahayak",
+    version="1.0.0",
+)
 
 allowed_origins = os.getenv("ALLOWED_ORIGINS", "*").split(",")
 app.add_middleware(

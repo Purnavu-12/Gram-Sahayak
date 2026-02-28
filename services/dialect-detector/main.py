@@ -29,7 +29,11 @@ logger = logging.getLogger(__name__)
 logger.addHandler(handler)
 logger.setLevel(logging.INFO)
 
-app = FastAPI(title="Dialect Detector Service")
+app = FastAPI(
+    title="Dialect Detector Service",
+    description="Hindi dialect detection and code-switching analysis for Gram Sahayak",
+    version="1.0.0",
+)
 
 allowed_origins = os.getenv("ALLOWED_ORIGINS", "*").split(",")
 app.add_middleware(

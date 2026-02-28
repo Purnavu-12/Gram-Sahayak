@@ -16,3 +16,6 @@ export * from './form-generator';
 export * from './user-profile';
 
 export * from './accessibility';
+
+// Bedrock types (named exports to avoid conflicts)
+export { BedrockModelConfig, BedrockInferenceResult, BedrockKBQueryResult, BedrockGuardrailResult } from './bedrock';

@@ -235,7 +235,19 @@ export class OfflineVoiceProcessor extends EventEmitter {
     language: string,
     dialect?: DialectCode
   ): Promise<TranscriptionResult> {
-    const model = await this.loadCachedModel(language, dialect);
+    let model = await this.loadCachedModel(language, dialect);
+
+    // Fallback: try to find any cached model for this language
+    if (!model && !dialect) {
+      for (const [modelId, cachedModel] of this.cachedModels) {
+        if (modelId === language || modelId.startsWith(`${language}-`)) {
+          model = cachedModel;
+          model.version.lastUsed = new Date();
+          model.isLoaded = true;
+          break;
+        }
+      }
+    }
 
     if (!model) {
       throw new Error(`No cached model available for ${language}${dialect ? `-${dialect}` : ''}`);

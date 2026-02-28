@@ -1,0 +1,167 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  typescript-tests:
+    name: TypeScript Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install accessibility service dependencies
+        run: cd services/accessibility && npm ci
+
+      - name: TypeScript type check
+        run: npx tsc --noEmit
+
+      - name: Run TypeScript tests
+        run: npx jest --no-coverage --forceExit --maxWorkers=2
+
+  python-dialect-detector:
+    name: Python Tests - Dialect Detector
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          cd services/dialect-detector
+          pip install -r requirements.txt
+
+      - name: Run tests
+        run: |
+          cd services/dialect-detector
+          python -m pytest tests/ -v --timeout=120
+
+  python-scheme-matcher:
+    name: Python Tests - Scheme Matcher
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          cd services/scheme-matcher
+          pip install -r requirements.txt
+
+      - name: Run tests
+        run: |
+          cd services/scheme-matcher
+          python -m pytest tests/ -v --timeout=120
+
+  python-document-guide:
+    name: Python Tests - Document Guide
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          cd services/document-guide
+          pip install -r requirements.txt
+
+      - name: Run tests
+        run: |
+          cd services/document-guide
+          python -m pytest tests/ -v --timeout=120
+
+  python-application-tracker:
+    name: Python Tests - Application Tracker
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          cd services/application-tracker
+          pip install -r requirements.txt
+
+      - name: Run tests
+        run: |
+          cd services/application-tracker
+          python -m pytest tests/ -v --timeout=120
+
+  python-user-profile:
+    name: Python Tests - User Profile
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          cd services/user-profile
+          pip install -r requirements.txt
+
+      - name: Run tests
+        run: |
+          cd services/user-profile
+          python -m pytest tests/ -v --timeout=120
+
+  security-check:
+    name: Security Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for secrets in code
+        run: |
+          # Check for common secret patterns
+          if grep -rn "password\s*=\s*['\"][^'\"]*['\"]" --include="*.py" --include="*.ts" --exclude-dir=node_modules --exclude-dir=__pycache__ --exclude="*.test.*" --exclude="*.spec.*" --exclude=".env.example" . | grep -v "test_\|mock\|example\|placeholder\|your-\|dummy\|ENCRYPTION_KEY\|JWT_SECRET"; then
+            echo "WARNING: Potential hardcoded secrets found"
+          else
+            echo "No hardcoded secrets detected"
+          fi
+
+      - name: Check for committed credentials
+        run: |
+          if [ -d "data/vault" ] || [ -d "data/keys" ]; then
+            echo "ERROR: Credential files found in repository"
+            exit 1
+          fi
+          echo "No credential files in repository"
