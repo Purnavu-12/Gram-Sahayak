@@ -4,7 +4,11 @@ Provides secure user profile management with encryption.
 """
 
 import os
+import logging
+import json
+import re
 from typing import List
+from datetime import datetime
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -29,6 +33,26 @@ from voice_updates import VoiceUpdateParser
 from privacy_manager import PrivacyManager
 from family_manager import FamilyManager
 
+
+class JSONFormatter(logging.Formatter):
+    def format(self, record):
+        log_entry = {
+            "timestamp": datetime.utcnow().isoformat(),
+            "level": record.levelname,
+            "service": "user-profile",
+            "message": record.getMessage(),
+        }
+        if record.exc_info:
+            log_entry["exception"] = self.formatException(record.exc_info)
+        return json.dumps(log_entry)
+
+
+handler = logging.StreamHandler()
+handler.setFormatter(JSONFormatter())
+logger = logging.getLogger(__name__)
+logger.addHandler(handler)
+logger.setLevel(logging.INFO)
+
 app = FastAPI(
     title="User Profile Service",
     description="Secure user profile management for Gram Sahayak",
@@ -36,13 +60,22 @@ app = FastAPI(
 )
 
 # CORS middleware
+allowed_origins = [o.strip() for o in os.getenv("ALLOWED_ORIGINS", "*").split(",") if o.strip()]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
     allow_headers=["*"],
 )
+
+
+def sanitize_string(value: str) -> str:
+    """Remove HTML tags and limit length for input sanitization."""
+    if not value:
+        return value
+    clean = re.sub(r'<[^>]+>', '', value)
+    return clean[:10000]
 
 # Initialize services
 encryption_key = os.getenv("ENCRYPTION_KEY")
@@ -79,7 +112,8 @@ async def create_profile(request: CreateUserProfileRequest):
         profile = storage.create_profile(request)
         return UserProfileResponse(success=True, profile=profile)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error in endpoint: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.get("/profiles/{user_id}", response_model=UserProfileResponse)
@@ -185,7 +219,8 @@ async def voice_update_profile(request: VoiceUpdateRequest):
             raise HTTPException(status_code=404, detail="Profile not found")
         
         # Parse natural language update
-        updates = voice_parser.parse_update(request.naturalLanguageUpdate, profile)
+        sanitized_input = sanitize_string(request.naturalLanguageUpdate)
+        updates = voice_parser.parse_update(sanitized_input, profile)
         
         if not updates:
             return VoiceUpdateResponse(
@@ -230,7 +265,8 @@ async def voice_update_profile(request: VoiceUpdateRequest):
             confirmationMessage="Profile updated successfully"
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error in endpoint: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.post("/profiles/voice-update/confirm")
@@ -271,7 +307,8 @@ async def confirm_voice_update(user_id: str, updates: dict):
         
         return {"success": True, "message": "Profile updated successfully"}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error in endpoint: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.post("/profiles/deletion/schedule", response_model=DataDeletionResponse)
@@ -309,7 +346,8 @@ async def schedule_data_deletion(request: DataDeletionRequest):
             confirmationId=deletion_record.deletionId
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error in endpoint: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.get("/profiles/deletion/status/{user_id}")
@@ -384,7 +422,8 @@ async def process_pending_deletions():
             "message": f"Processed {deleted_count} pending deletions"
         }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error in endpoint: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.post("/profiles/{user_id}/family", response_model=FamilyMemberProfile)
@@ -422,7 +461,8 @@ async def create_family_member(user_id: str, request: CreateFamilyMemberRequest)
         
         return member
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error in endpoint: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.get("/profiles/{user_id}/family", response_model=List[FamilyMemberProfile])
@@ -752,7 +792,8 @@ async def enforce_retention_policy_all():
             "stats": total_stats
         }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error in endpoint: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.get("/profiles/{user_id}/privacy/dashboard")

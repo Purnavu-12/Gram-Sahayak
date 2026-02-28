@@ -21,12 +21,59 @@ from outcome_explanation import (
     OutcomeType,
     RejectionReason
 )
+import os
+import logging
+import json
+import re
+from datetime import datetime
+from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI(title="Application Tracker Service")
+
+class JSONFormatter(logging.Formatter):
+    def format(self, record):
+        log_entry = {
+            "timestamp": datetime.utcnow().isoformat(),
+            "level": record.levelname,
+            "service": "application-tracker",
+            "message": record.getMessage(),
+        }
+        if record.exc_info:
+            log_entry["exception"] = self.formatException(record.exc_info)
+        return json.dumps(log_entry)
+
+
+handler = logging.StreamHandler()
+handler.setFormatter(JSONFormatter())
+logger = logging.getLogger(__name__)
+logger.addHandler(handler)
+logger.setLevel(logging.INFO)
+
+app = FastAPI(
+    title="Application Tracker Service",
+    description="Government portal integration, application submission, and status tracking for Gram Sahayak",
+    version="1.0.0",
+)
+
+allowed_origins = [o.strip() for o in os.getenv("ALLOWED_ORIGINS", "*").split(",") if o.strip()]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=allowed_origins,
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_headers=["*"],
+)
 
 # Initialize services
 portal_integration = GovernmentPortalIntegration()
 lifecycle_manager = LifecycleManager()
+
+
+def sanitize_string(value: str) -> str:
+    """Remove HTML tags and limit length for input sanitization."""
+    if not value:
+        return value
+    clean = re.sub(r'<[^>]+>', '', value)
+    return clean[:10000]
 
 
 class AuthenticationRequest(BaseModel):
@@ -118,7 +165,8 @@ async def authenticate_portal(request: AuthenticationRequest):
         )
         return result
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error in endpoint: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.post("/application/submit")
@@ -162,7 +210,8 @@ async def submit_application(request: SubmissionRequest):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error in endpoint: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.post("/application/status")
@@ -208,7 +257,8 @@ async def get_application_status(request: StatusRequest):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error in endpoint: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.post("/application/monitor")
@@ -227,7 +277,8 @@ async def monitor_application(request: MonitoringRequest):
         )
         return result
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error in endpoint: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.get("/portals/supported")
@@ -272,7 +323,7 @@ async def get_timeline(application_id: str):
     Validates: Requirement 6.2 (confirmation numbers and expected timelines)
     """
     try:
-        timeline = await lifecycle_manager.get_timeline(application_id)
+        timeline = await lifecycle_manager.get_timeline(sanitize_string(application_id))
         
         if not timeline:
             raise HTTPException(
@@ -295,7 +346,8 @@ async def get_timeline(application_id: str):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error in endpoint: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.get("/application/{application_id}/notifications")
@@ -331,7 +383,8 @@ async def get_notifications(application_id: str, unread_only: bool = False):
             ]
         }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error in endpoint: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.post("/application/notification/read")
@@ -358,7 +411,8 @@ async def mark_notification_read(request: NotificationMarkRead):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error in endpoint: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.post("/application/additional-info/request")
@@ -387,7 +441,8 @@ async def create_additional_info_request(request: AdditionalInfoRequestModel):
             }
         }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error in endpoint: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.get("/application/{application_id}/additional-info/requests")
@@ -423,7 +478,8 @@ async def get_additional_info_requests(
             ]
         }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error in endpoint: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.post("/application/additional-info/submit")
@@ -452,7 +508,8 @@ async def submit_additional_info(request: AdditionalInfoSubmission):
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error in endpoint: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.get("/health")
@@ -515,7 +572,8 @@ async def send_outcome_notification(request: OutcomeNotificationRequest):
             }
         }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error in endpoint: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.get("/application/{application_id}/outcome")
@@ -553,7 +611,8 @@ async def get_outcome_explanation(application_id: str):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error in endpoint: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.get("/application/{application_id}/appeal-guidance")
@@ -589,7 +648,8 @@ async def get_appeal_guidance(application_id: str):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error in endpoint: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.get("/application/{application_id}/resubmission-guidance")
@@ -624,4 +684,5 @@ async def get_resubmission_guidance(application_id: str):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error in endpoint: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")

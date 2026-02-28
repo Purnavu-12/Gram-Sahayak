@@ -37,15 +37,18 @@ export class HealthMonitor {
       const response = await axios.get(service.url, { timeout: 5000 });
       const responseTime = Date.now() - startTime;
       
-      return {
+      const health: ServiceHealth = {
         name: service.name,
         url: service.url,
         status: response.status === 200 ? 'healthy' : 'unhealthy',
         responseTime,
         lastChecked: new Date(),
       };
+
+      this.healthCache.set(service.name, health);
+      return health;
     } catch (error: any) {
-      return {
+      const health: ServiceHealth = {
         name: service.name,
         url: service.url,
         status: 'unhealthy',
@@ -53,6 +56,9 @@ export class HealthMonitor {
         lastChecked: new Date(),
         error: error.message,
       };
+
+      this.healthCache.set(service.name, health);
+      return health;
     }
   }
 

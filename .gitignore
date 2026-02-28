@@ -42,3 +42,6 @@ dump.rdb
 .hypothesis/
 services/user-profile/data/
 services/*/data/
+
+# Sensitive data / credentials
+data/

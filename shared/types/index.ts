@@ -15,4 +15,16 @@ export * from './form-generator';
 // User profile is the canonical source for shared types
 export * from './user-profile';
 
-export * from './accessibility';
+// Accessibility types (named exports to avoid FormField conflict with form-generator)
+export {
+  InputMode, OutputMode, ContrastMode, FontSize,
+  TextInputConfig, TranscriptionDisplayConfig, ButtonNavigationConfig,
+  VisualAccessibilitySettings, AccessibilityPreferences, TextInputEvent,
+  CaptionData, ButtonAction, ButtonGroup, VisualFormDisplay,
+  ScreenReaderAnnouncement, KeyboardNavigationConfig, KeyboardShortcut,
+  SkipLink, AriaAttributes, AccessibilityService
+} from './accessibility';
+export { FormField as AccessibilityFormField } from './accessibility';
+
+// Bedrock types (named exports to avoid conflicts)
+export { BedrockModelConfig, BedrockInferenceResult, BedrockKBQueryResult, BedrockGuardrailResult } from './bedrock';

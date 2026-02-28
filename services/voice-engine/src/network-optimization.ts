@@ -515,6 +515,12 @@ export class NetworkOptimizationService extends EventEmitter {
           operation.priority > SyncPriority.HIGH) {
         continue;
       }
+
+      // In fair conditions, skip low priority operations
+      if (this.currentCondition === NetworkCondition.FAIR && 
+          operation.priority > SyncPriority.NORMAL) {
+        continue;
+      }
       
       batch.push(operation);
     }
@@ -637,6 +643,13 @@ export class NetworkOptimizationService extends EventEmitter {
    */
   getAudioQuality(): AudioQualitySettings {
     return { ...this.currentQuality };
+  }
+
+  /**
+   * Set the network condition and adjust quality accordingly
+   */
+  setCondition(condition: NetworkCondition): void {
+    this.handleConditionChange(condition);
   }
 
   /**
