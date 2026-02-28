@@ -1,6 +1,9 @@
 from typing import Dict, List, Any, Optional
 from datetime import datetime, timedelta
 import logging
+import json
+import os
+import re
 
 try:
     from neo4j import GraphDatabase, Driver
@@ -72,7 +75,21 @@ class SchemeMatcherService:
             logger.info("Data freshness monitoring initialized")
 
     def _initialize_schemes(self) -> List[Dict[str, Any]]:
-        """Initialize comprehensive government schemes database"""
+        """Initialize government schemes database.
+        
+        Loads from seed-data/schemes/ JSON files when LOAD_SEED_DATA env var is set,
+        otherwise uses the built-in sample schemes for backward compatibility.
+        """
+        if os.environ.get('LOAD_SEED_DATA', '').lower() in ('1', 'true', 'yes'):
+            seed_schemes = self._load_seed_data()
+            if seed_schemes:
+                logger.info(f"Loaded {len(seed_schemes)} schemes from seed data")
+                return seed_schemes
+        
+        return self._builtin_schemes()
+
+    def _builtin_schemes(self) -> List[Dict[str, Any]]:
+        """Built-in sample schemes for development and testing."""
         return [
             {
                 "scheme_id": "PM-KISAN",
@@ -178,6 +195,110 @@ class SchemeMatcherService:
                 "last_updated": datetime.now().isoformat()
             }
         ]
+
+    def _load_seed_data(self) -> Optional[List[Dict[str, Any]]]:
+        """Load scheme data from seed-data/schemes/ JSON files."""
+        # Look for seed-data relative to service dir or project root
+        service_dir = os.path.dirname(os.path.abspath(__file__))
+        possible_paths = [
+            os.path.join(service_dir, '..', '..', 'seed-data', 'schemes'),
+            os.path.join(os.getcwd(), 'seed-data', 'schemes'),
+        ]
+        
+        seed_dir = None
+        for path in possible_paths:
+            resolved = os.path.realpath(path)
+            if os.path.isdir(resolved):
+                seed_dir = resolved
+                break
+        
+        if not seed_dir:
+            return None
+        
+        schemes = []
+        for filename in sorted(os.listdir(seed_dir)):
+            if not filename.endswith('.json'):
+                continue
+            filepath = os.path.join(seed_dir, filename)
+            try:
+                with open(filepath, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    items = data if isinstance(data, list) else [data]
+                    for item in items:
+                        transformed = self._transform_seed_scheme(item)
+                        schemes.append(transformed)
+            except (json.JSONDecodeError, KeyError) as e:
+                logger.warning(f"Failed to load {filename}: {e}")
+        
+        if not schemes:
+            return None
+        
+        # Build category-based relationships
+        by_category: Dict[str, List[str]] = {}
+        for s in schemes:
+            by_category.setdefault(s.get('category', ''), []).append(s['scheme_id'])
+        for s in schemes:
+            cat = s.get('category', '')
+            s['related_schemes'] = [sid for sid in by_category.get(cat, []) if sid != s['scheme_id']][:5]
+        
+        return schemes
+
+    def _transform_seed_scheme(self, scheme: Dict[str, Any]) -> Dict[str, Any]:
+        """Transform a seed-data JSON scheme into matcher format."""
+        eligibility = scheme.get('eligibility', {})
+        
+        matcher_elig: Dict[str, Any] = {}
+        if eligibility.get('occupation'):
+            matcher_elig['occupation'] = eligibility['occupation']
+        if eligibility.get('income_limit') is not None:
+            matcher_elig['max_income'] = eligibility['income_limit']
+        if eligibility.get('age_min') is not None:
+            matcher_elig['min_age'] = eligibility['age_min']
+        if eligibility.get('age_max') is not None:
+            matcher_elig['max_age'] = eligibility['age_max']
+        if eligibility.get('gender') and eligibility['gender'] != 'all':
+            matcher_elig['gender'] = [eligibility['gender']]
+        if eligibility.get('caste'):
+            matcher_elig['caste'] = eligibility['caste']
+        elif eligibility.get('category'):
+            categories = eligibility['category']
+            if isinstance(categories, str):
+                categories = [categories]
+            caste_values = {'sc', 'st', 'obc'}
+            non_empty = [c for c in categories if c]
+            if non_empty and set(non_empty).issubset(caste_values):
+                matcher_elig['caste'] = non_empty
+        if eligibility.get('area') and eligibility['area'] != 'both':
+            matcher_elig['area'] = eligibility['area']
+        
+        benefits = scheme.get('benefits', {})
+        benefit_amount = 0
+        amount_str = benefits.get('amount', '')
+        numbers = re.findall(r'[\d,]+', amount_str.replace(',', ''))
+        if numbers:
+            try:
+                benefit_amount = int(numbers[0])
+            except ValueError:
+                benefit_amount = 0
+        
+        return {
+            'scheme_id': scheme['id'].upper(),
+            'name': scheme['name'],
+            'name_hi': scheme.get('name_hi', ''),
+            'description': scheme.get('description', ''),
+            'eligibility': matcher_elig,
+            'benefit_amount': benefit_amount,
+            'difficulty': 'easy' if benefits.get('type') == 'cash' else 'medium',
+            'category': scheme.get('category', 'general'),
+            'documents_required': scheme.get('documents_required', []),
+            'application_process': scheme.get('application_process', ''),
+            'website': scheme.get('website', ''),
+            'ministry': scheme.get('ministry', ''),
+            'benefits': benefits,
+            'related_schemes': [],
+            'last_updated': datetime.now().isoformat(),
+            'status': scheme.get('status', 'active')
+        }
     
     def _initialize_graph_database(self):
         """Initialize Neo4j graph database with scheme relationships"""
