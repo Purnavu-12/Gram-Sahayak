@@ -713,7 +713,7 @@ async def export_user_data(user_id: str, include_access_logs: bool = True, reque
     )
     
     # Log this access
-    ip_address = request.client.host if request else None
+    ip_address = request.client.host if request and request.client else None
     privacy_manager.log_data_access(
         user_id=user_id,
         accessed_by="user",
