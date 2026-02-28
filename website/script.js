@@ -641,7 +641,7 @@
     }
   });
 
-  // Mic button demo interaction
+  // Mic button demo interaction (fallback when Web Speech API is not available)
   var demoResponses = [
     '🎤 Detected language: Hindi (हिन्दी)\n\n"I want to know about farming schemes"\n\n✅ Searching 700+ schemes for eligibility...',
     '🎤 Detected language: Bengali (বাংলা)\n\n"আমার পেনশন সম্পর্কে জানতে চাই"\n\n✅ Found 2 pension schemes you may be eligible for.',
@@ -649,8 +649,9 @@
     '🎤 Detected language: Telugu (తెలుగు)\n\n"ఇంటి నిర్మాణ పథకం గురించి"\n\n✅ You are eligible for PM Awas Yojana. Shall I help you apply?'
   ];
   var demoResponseIndex = 0;
+  var hasSpeechAPI = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
 
-  if (micButton) {
+  if (micButton && !hasSpeechAPI) {
     micButton.addEventListener('click', function () {
       if (micButton.classList.contains('active')) return;
 
@@ -732,6 +733,175 @@
     backToTop.addEventListener('click', function () {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
+  }
+
+  // --- Scheme Finder ---
+  var API_BASE = window.location.origin;
+
+  function matchSchemesLocally(data, profile) {
+    if (!data || !Array.isArray(data)) return [];
+    return data.filter(function (scheme) {
+      var elig = scheme.eligibility || {};
+      if (elig.age_min && profile.age < elig.age_min) return false;
+      if (elig.age_max && profile.age > elig.age_max) return false;
+      if (elig.gender && elig.gender !== 'all' && profile.gender !== 'all' && elig.gender !== profile.gender) return false;
+      if (elig.income_limit && profile.income && profile.income > elig.income_limit) return false;
+      if (elig.occupation && elig.occupation.length > 0 && profile.occupation) {
+        if (elig.occupation.indexOf(profile.occupation) === -1) return false;
+      }
+      if (elig.category && elig.category.length > 0 && elig.category.length < 6) {
+        if (profile.socialCategory && elig.category.indexOf(profile.socialCategory) === -1) return false;
+      }
+      if (elig.area && elig.area !== 'both' && profile.area && elig.area !== profile.area) return false;
+      return true;
+    }).map(function (scheme) {
+      return {
+        name: scheme.name,
+        category: scheme.category,
+        description: scheme.description,
+        benefits: scheme.benefits,
+        documents_required: scheme.documents_required || [],
+        website: scheme.website || ''
+      };
+    });
+  }
+
+  function escapeHtml(text) {
+    var div = document.createElement('div');
+    div.appendChild(document.createTextNode(text));
+    return div.innerHTML;
+  }
+
+  function displayResults(schemes, container) {
+    if (!schemes || schemes.length === 0) {
+      container.innerHTML = '<div class="results-placeholder"><span class="placeholder-icon" aria-hidden="true">🔍</span><p>No matching schemes found. Try adjusting your criteria.</p></div>';
+      return;
+    }
+    var html = '<div class="results-header"><h3>Matching Schemes</h3><span class="results-count">' + schemes.length + ' found</span></div>';
+    schemes.forEach(function (scheme) {
+      var benefits = scheme.benefits || {};
+      var benefitText = benefits.amount || '';
+      var docs = scheme.documents_required || [];
+      var name = scheme.name || '';
+      var desc = scheme.description || '';
+      var cat = scheme.category || '';
+      html += '<div class="result-card">';
+      html += '<div class="result-category">' + escapeHtml(cat) + '</div>';
+      html += '<h4>' + escapeHtml(name) + '</h4>';
+      if (desc) html += '<p class="result-desc">' + escapeHtml(desc) + '</p>';
+      if (benefitText) html += '<p class="result-benefit">\uD83D\uDCB0 ' + escapeHtml(benefitText) + '</p>';
+      if (docs.length > 0) html += '<p class="result-docs">\uD83D\uDCC4 Documents: ' + escapeHtml(docs.slice(0, 3).join(', ')) + (docs.length > 3 ? '...' : '') + '</p>';
+      html += '</div>';
+    });
+    container.innerHTML = html;
+  }
+
+  function findSchemes(profile) {
+    var resultsDiv = document.getElementById('finder-results');
+    if (!resultsDiv) return;
+    resultsDiv.innerHTML = '<div class="results-loading"><div class="spinner"></div><p>Searching schemes...</p></div>';
+
+    // Try API Gateway first, then fall back to local seed data
+    fetch(API_BASE + '/api/schemes/find', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user_id: 'demo-user',
+        personal_info: { name: 'User' },
+        demographics: { age: profile.age, gender: profile.gender, caste: profile.socialCategory, location_type: profile.area },
+        economic: { income: profile.income, occupation: profile.occupation },
+        preferences: {},
+        application_history: []
+      })
+    })
+    .then(function (res) { if (!res.ok) throw new Error('API unavailable'); return res.json(); })
+    .then(function (data) { displayResults(data, resultsDiv); })
+    .catch(function () {
+      // Fall back to local matching with seed data
+      fetch('schemes-data.json')
+        .then(function (res) { return res.ok ? res.json() : []; })
+        .then(function (data) { displayResults(matchSchemesLocally(data, profile), resultsDiv); })
+        .catch(function () {
+          resultsDiv.innerHTML = '<div class="results-error"><p>\u26A0\uFE0F Unable to load scheme data. Please ensure the backend API is running.</p></div>';
+        });
+    });
+  }
+
+  var finderForm = document.getElementById('finder-form');
+  if (finderForm) {
+    finderForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var profile = {
+        age: parseInt(document.getElementById('finder-age').value) || 0,
+        gender: document.getElementById('finder-gender').value,
+        occupation: document.getElementById('finder-occupation').value,
+        income: parseInt(document.getElementById('finder-income').value) || 0,
+        socialCategory: document.getElementById('finder-category').value,
+        area: document.getElementById('finder-area').value
+      };
+      findSchemes(profile);
+    });
+  }
+
+  // --- Web Speech API Integration ---
+  var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  var speechSupported = !!SpeechRecognition;
+
+  if (speechSupported && micButton) {
+    var recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    var speechLangMap = {
+      'hi': 'hi-IN', 'bn': 'bn-IN', 'te': 'te-IN', 'mr': 'mr-IN',
+      'ta': 'ta-IN', 'gu': 'gu-IN', 'kn': 'kn-IN', 'ml': 'ml-IN',
+      'or': 'or-IN', 'pa': 'pa-IN', 'as': 'as-IN', 'ur': 'ur-IN',
+      'ne': 'ne-NP', 'kok': 'kok-IN', 'mai': 'mai-IN', 'sd': 'sd-IN',
+      'en': 'en-IN', 'sa': 'sa-IN'
+    };
+
+    micButton.addEventListener('click', function speechHandler() {
+      if (micButton.classList.contains('active')) return;
+      var lang = speechLangMap[currentChatLang] || 'hi-IN';
+      recognition.lang = lang;
+      micButton.classList.add('active');
+      if (micStatus) micStatus.textContent = 'Listening...';
+      if (demoResponse) { demoResponse.classList.remove('visible'); demoResponse.textContent = ''; }
+      try { recognition.start(); } catch (e) {
+        micButton.classList.remove('active');
+        if (micStatus) micStatus.textContent = 'Tap to start speaking';
+      }
+    });
+
+    recognition.onresult = function (event) {
+      var transcript = event.results[0][0].transcript;
+      var confidence = event.results[0][0].confidence;
+      micButton.classList.remove('active');
+      if (micStatus) micStatus.textContent = 'Tap to speak again';
+      if (demoResponse) {
+        var confPercent = Math.round(confidence * 100);
+        demoResponse.textContent = '\uD83C\uDFA4 You said: "' + transcript + '"\n\nConfidence: ' + confPercent + '%\n\n\u2705 Searching schemes for your query...';
+        demoResponse.classList.add('visible');
+      }
+    };
+
+    recognition.onerror = function (event) {
+      micButton.classList.remove('active');
+      if (event.error === 'no-speech') {
+        if (micStatus) micStatus.textContent = 'No speech detected. Tap to try again.';
+      } else if (event.error === 'not-allowed') {
+        if (micStatus) micStatus.textContent = 'Microphone access denied.';
+      } else {
+        if (micStatus) micStatus.textContent = 'Tap to try again.';
+      }
+    };
+
+    recognition.onend = function () { micButton.classList.remove('active'); };
+
+    var demoNote = document.querySelector('.demo-note');
+    if (demoNote) {
+      demoNote.innerHTML = '<em>\uD83C\uDFA4 Web Speech API detected! Your browser supports real voice input.</em>';
+    }
   }
 
 })();
