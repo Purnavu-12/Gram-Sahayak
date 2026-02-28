@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 import logging
 import json
 import os
+import re
 
 try:
     from neo4j import GraphDatabase, Driver
@@ -197,8 +198,6 @@ class SchemeMatcherService:
 
     def _load_seed_data(self) -> Optional[List[Dict[str, Any]]]:
         """Load scheme data from seed-data/schemes/ JSON files."""
-        import re
-        
         # Look for seed-data relative to service dir or project root
         service_dir = os.path.dirname(os.path.abspath(__file__))
         possible_paths = [
@@ -246,7 +245,6 @@ class SchemeMatcherService:
 
     def _transform_seed_scheme(self, scheme: Dict[str, Any]) -> Dict[str, Any]:
         """Transform a seed-data JSON scheme into matcher format."""
-        import re
         eligibility = scheme.get('eligibility', {})
         
         matcher_elig: Dict[str, Any] = {}

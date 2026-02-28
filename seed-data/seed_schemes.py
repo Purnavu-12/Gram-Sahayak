@@ -78,7 +78,7 @@ def transform_to_matcher_format(scheme: Dict[str, Any]) -> Dict[str, Any]:
             benefit_amount = 0
 
     return {
-        'scheme_id': scheme['id'].upper().replace('-', '-'),
+        'scheme_id': scheme['id'].upper(),
         'name': scheme['name'],
         'name_hi': scheme.get('name_hi', ''),
         'description': scheme.get('description', ''),

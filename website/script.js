@@ -789,8 +789,8 @@
       html += '<div class="result-category">' + escapeHtml(cat) + '</div>';
       html += '<h4>' + escapeHtml(name) + '</h4>';
       if (desc) html += '<p class="result-desc">' + escapeHtml(desc) + '</p>';
-      if (benefitText) html += '<p class="result-benefit">\uD83D\uDCB0 ' + escapeHtml(benefitText) + '</p>';
-      if (docs.length > 0) html += '<p class="result-docs">\uD83D\uDCC4 Documents: ' + escapeHtml(docs.slice(0, 3).join(', ')) + (docs.length > 3 ? '...' : '') + '</p>';
+      if (benefitText) html += '<p class="result-benefit">💰 ' + escapeHtml(benefitText) + '</p>';
+      if (docs.length > 0) html += '<p class="result-docs">📄 Documents: ' + escapeHtml(docs.slice(0, 3).join(', ')) + (docs.length > 3 ? '...' : '') + '</p>';
       html += '</div>';
     });
     container.innerHTML = html;
@@ -822,7 +822,7 @@
         .then(function (res) { return res.ok ? res.json() : []; })
         .then(function (data) { displayResults(matchSchemesLocally(data, profile), resultsDiv); })
         .catch(function () {
-          resultsDiv.innerHTML = '<div class="results-error"><p>\u26A0\uFE0F Unable to load scheme data. Please ensure the backend API is running.</p></div>';
+          resultsDiv.innerHTML = '<div class="results-error"><p>⚠️ Unable to load scheme data. Please ensure the backend API is running.</p></div>';
         });
     });
   }
@@ -880,7 +880,7 @@
       if (micStatus) micStatus.textContent = 'Tap to speak again';
       if (demoResponse) {
         var confPercent = Math.round(confidence * 100);
-        demoResponse.textContent = '\uD83C\uDFA4 You said: "' + transcript + '"\n\nConfidence: ' + confPercent + '%\n\n\u2705 Searching schemes for your query...';
+        demoResponse.textContent = '🎤 You said: "' + transcript + '"\n\nConfidence: ' + confPercent + '%\n\n✅ Searching schemes for your query...';
         demoResponse.classList.add('visible');
       }
     };
@@ -900,7 +900,7 @@
 
     var demoNote = document.querySelector('.demo-note');
     if (demoNote) {
-      demoNote.innerHTML = '<em>\uD83C\uDFA4 Web Speech API detected! Your browser supports real voice input.</em>';
+      demoNote.innerHTML = '<em>🎤 Web Speech API detected! Your browser supports real voice input.</em>';
     }
   }
 
